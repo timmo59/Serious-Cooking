@@ -1058,8 +1058,8 @@
       <button class="btn btn-outline" onclick="exportRecipes()">⬇ Export</button>
       <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">⬆ Import JSON</button>
       <input type="file" id="import-file" accept=".json" onchange="importRecipes(event)">
-      <label class="btn btn-outline" for="import-doc">📄 Import .docx / .pdf</label>
-      <input type="file" id="import-doc" accept=".docx,.pdf" onchange="importDocument(event)">
+      <button class="btn btn-outline" onclick="openDocImport()">📄 Import .docx / .pdf</button>
+      <input type="file" id="import-doc" accept=".docx,.pdf,.txt" onchange="importDocument(event)" style="display:none">
     </div>
 
     <div class="recipe-toolbar">
@@ -2397,149 +2397,176 @@ function importRecipes(e) {
   e.target.value = '';
 }
 
+
+
+// ── DOC IMPORT — category picker then file chooser ──
+const DOC_CATEGORIES = [
+  'Beef','Chicken','Pork','Seafood','Pasta','Soups and Stews',
+  'Salads and Dressings','Breads, Rolls and Buns','Appetizers',
+  'Sauces & Condiments','Sides','Cakes, Cookies & Quick Breads',
+  'Asian','Sandwiches','Charcuterie','Other'
+];
+
+let pendingDocCategory = null;
+
+function openDocImport() {
+  // Build category picker overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'doc-cat-overlay';
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(26,22,18,0.65);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;`;
+  overlay.innerHTML = `
+    <div style="background:var(--warm-white);border-radius:4px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
+      <div style="background:var(--ink);color:var(--cream);padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;">Import Document</span>
+        <button onclick="document.getElementById('doc-cat-overlay').remove()" style="background:none;border:none;color:#9b8c82;font-size:1.2rem;cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:1.5rem;">
+        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;">Select a category, then choose your PDF or Word document. All recipes found will be filed under this category.</p>
+        <label style="font-size:0.75rem;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.4rem;">Category</label>
+        <select id="doc-cat-select" style="width:100%;border:1px solid var(--border-strong);padding:0.65rem 0.9rem;font-family:'Source Serif 4',serif;font-size:0.95rem;background:var(--warm-white);outline:none;border-radius:2px;margin-bottom:1.2rem;">
+          ${DOC_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('')}
+        </select>
+        <button onclick="confirmDocImport()" class="btn btn-brass" style="width:100%;justify-content:center;">Choose File →</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function confirmDocImport() {
+  pendingDocCategory = document.getElementById('doc-cat-select').value;
+  document.getElementById('doc-cat-overlay').remove();
+  document.getElementById('import-doc').click();
+}
+
 async function importDocument(e) {
   const file = e.target.files[0];
   if (!file) return;
   e.target.value = '';
 
-  const statusEl = document.getElementById('recipe-count-label');
-  const originalLabel = statusEl.textContent;
+  const category = pendingDocCategory || 'Imported';
+  pendingDocCategory = null;
 
-  // Show a modal-style overlay message
+  const isPDF = file.name.toLowerCase().endsWith('.pdf');
+  const isTXT = file.name.toLowerCase().endsWith('.txt');
+
+  // Show progress overlay
   const overlay = document.createElement('div');
-  overlay.style.cssText = `position:fixed;inset:0;background:rgba(26,22,18,0.6);z-index:300;display:flex;align-items:center;justify-content:center;`;
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(26,22,18,0.65);z-index:300;display:flex;align-items:center;justify-content:center;`;
   overlay.innerHTML = `
-    <div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;margin-bottom:0.75rem;">Reading ${file.name}</div>
-      <div id="import-status" style="font-size:0.9rem;color:var(--text-muted);font-style:italic;">Converting document…</div>
+    <div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:440px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;margin-bottom:0.75rem;">${file.name}</div>
+      <div id="import-status" style="font-size:0.88rem;color:var(--text-muted);font-style:italic;">Reading file…</div>
     </div>`;
   document.body.appendChild(overlay);
-
-  const setStatus = (msg) => {
-    const el = document.getElementById('import-status');
-    if (el) el.textContent = msg;
-  };
+  const setStatus = t => { const el = document.getElementById('import-status'); if(el) el.textContent = t; };
 
   try {
-    // Read file as base64
-    const base64 = await new Promise((res, rej) => {
-      const reader = new FileReader();
-      reader.onload = () => res(reader.result.split(',')[1]);
-      reader.onerror = () => rej(new Error('File read failed'));
-      reader.readAsDataURL(file);
-    });
-
-    const isPDF = file.name.toLowerCase().endsWith('.pdf');
-    const mediaType = isPDF ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-
-    setStatus('Sending to Claude for extraction…');
-
-    // For DOCX, Claude can't read binary directly — convert to text hint
-    // For PDF, Claude handles it natively as a document
     let messageContent;
+
     if (isPDF) {
+      // PDF: send as base64 document — natively supported
+      setStatus('Converting PDF…');
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = () => rej(new Error('File read failed'));
+        r.readAsDataURL(file);
+      });
       messageContent = [
-        {
-          type: 'document',
-          source: { type: 'base64', media_type: mediaType, data: base64 }
-        },
-        {
-          type: 'text',
-          text: `Extract all recipes from this document. Return ONLY a valid JSON array, no markdown, no explanation. Each object must have these fields:
-- "title": string (recipe name)
-- "category": string (infer from context: Beef, Chicken, Pork, Seafood, Pasta, Soups and Stews, Salads and Dressings, Breads, Appetizers, Sauces & Condiments, Sides, Cakes Cookies & Quick Breads, or other appropriate category)
-- "body": string (full recipe text including ingredients and method, preserve formatting)
-- "url": string or omit if not present
-
-If no recipes found, return [].`
-        }
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+        { type: 'text', text: `Extract all recipes from this PDF. Return ONLY a raw JSON array (no markdown, no explanation). Each object: {"title": string, "body": string with full ingredients and method}. If no recipes found return [].` }
       ];
-    } else {
-      // DOCX: send as base64 document block — Claude will attempt to read it
-      messageContent = [
-        {
-          type: 'document',
-          source: { type: 'base64', media_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', data: base64 }
-        },
-        {
-          type: 'text',
-          text: `Extract all recipes from this Word document. Return ONLY a valid JSON array, no markdown, no explanation. Each object must have:
-- "title": string (recipe name)
-- "category": string (infer: Beef, Chicken, Pork, Seafood, Pasta, Soups and Stews, Salads and Dressings, Breads, Appetizers, Sauces & Condiments, Sides, Cakes Cookies & Quick Breads, or other)
-- "body": string (full recipe text, ingredients and method)
-- "url": string or omit if not present
 
-If no recipes found, return [].`
+    } else {
+      // DOCX or TXT: extract as plain text client-side first
+      setStatus('Extracting text…');
+      let plainText = '';
+
+      if (isTXT) {
+        plainText = await file.text();
+      } else {
+        // DOCX: use mammoth via CDN
+        if (!window.mammoth) {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
         }
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        plainText = result.value;
+      }
+
+      if (!plainText.trim()) throw new Error('Could not extract text from document.');
+
+      // Truncate if very large (API limit)
+      const truncated = plainText.length > 80000 ? plainText.slice(0, 80000) + '\n[truncated]' : plainText;
+
+      messageContent = [
+        { type: 'text', text: `Extract all recipes from the following document text. Return ONLY a raw JSON array (no markdown, no explanation). Each object: {"title": string, "body": string with full ingredients and method}. If no recipes found return [].\n\n---\n${truncated}` }
       ];
     }
 
+    setStatus('Sending to Claude…');
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
-        system: 'You are a recipe extraction assistant. You extract recipes from documents and return structured JSON only. Never return markdown code fences. Never add explanation. Return a raw JSON array.',
+        system: 'You are a recipe extraction assistant. Return structured JSON only — a raw JSON array, no markdown fences, no preamble, no explanation.',
         messages: [{ role: 'user', content: messageContent }]
       })
     });
 
-    const data = await res.json();
-    setStatus('Parsing results…');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(`API error ${res.status}: ${errData.error?.message || res.statusText}`);
+    }
 
-    const text = data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '';
-    const cleaned = text.replace(/```json|```/g, '').trim();
+    setStatus('Parsing results…');
+    const data = await res.json();
+    const rawText = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    const cleaned = rawText.replace(/```json|```/g, '').trim();
 
     let imported = [];
     try {
       imported = JSON.parse(cleaned);
     } catch {
-      // Try to extract JSON array from within the response
       const match = cleaned.match(/\[[\s\S]*\]/);
       if (match) imported = JSON.parse(match[0]);
+      else throw new Error('Could not parse response as JSON. Raw: ' + cleaned.slice(0, 200));
     }
 
     if (!Array.isArray(imported) || imported.length === 0) {
-      setStatus('No recipes found in document.');
-      setTimeout(() => overlay.remove(), 2500);
+      overlay.innerHTML = `<div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:440px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);"><div style="font-size:2rem;margin-bottom:0.5rem;">🔍</div><div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;">No recipes found</div><div style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">The document may be image-based or contain no recognisable recipes.</div></div>`;
+      setTimeout(() => overlay.remove(), 3000);
       return;
     }
 
-    // Normalize and add IDs
     const now = new Date().toISOString();
-    const newRecipes = imported
-      .filter(r => r.title)
-      .map(r => ({
-        id: genId(),
-        title: r.title,
-        category: r.category || 'Imported',
-        body: r.body || '',
-        url: r.url || '',
-        saved: now
-      }));
+    const newRecipes = imported.filter(r => r.title).map(r => ({
+      id: genId(),
+      title: r.title,
+      category,
+      body: r.body || '',
+      url: r.url || '',
+      saved: now
+    }));
 
     recipes = [...newRecipes, ...recipes];
     await saveToStorage();
     renderRecipes();
 
-    overlay.innerHTML = `
-      <div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-        <div style="font-size:2rem;margin-bottom:0.75rem;">✓</div>
-        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;margin-bottom:0.5rem;">Imported ${newRecipes.length} recipe${newRecipes.length !== 1 ? 's' : ''}</div>
-        <div style="font-size:0.88rem;color:var(--text-muted);">from ${file.name}</div>
-      </div>`;
+    overlay.innerHTML = `<div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:440px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);"><div style="font-size:2.5rem;margin-bottom:0.5rem;">✓</div><div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;margin-bottom:0.25rem;">Imported ${newRecipes.length} recipe${newRecipes.length !== 1 ? 's' : ''}</div><div style="font-size:0.85rem;color:var(--text-muted);">Filed under <strong>${category}</strong></div></div>`;
     setTimeout(() => overlay.remove(), 2500);
 
   } catch (err) {
-    console.error(err);
-    overlay.innerHTML = `
-      <div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-        <div style="font-size:2rem;margin-bottom:0.75rem;">✗</div>
-        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;margin-bottom:0.5rem;">Import failed</div>
-        <div style="font-size:0.88rem;color:var(--text-muted);">${err.message}</div>
-      </div>`;
-    setTimeout(() => overlay.remove(), 3000);
+    console.error('Import error:', err);
+    overlay.innerHTML = `<div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:440px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);"><div style="font-size:2rem;margin-bottom:0.5rem;">✗</div><div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;margin-bottom:0.5rem;">Import failed</div><div style="font-size:0.82rem;color:var(--text-muted);word-break:break-word;">${err.message}</div></div>`;
+    setTimeout(() => overlay.remove(), 5000);
   }
 }
 
