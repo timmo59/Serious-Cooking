@@ -2199,7 +2199,7 @@ async function sendChat() {
   const thinking = addMsg('thinking', '…thinking');
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://serious-cooking-api.timmo59.workers.dev', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2510,7 +2510,7 @@ async function importDocument(e) {
     }
 
     setStatus('Sending to Claude…');
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://serious-cooking-api.timmo59.workers.dev', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2584,7 +2584,7 @@ async function doWebSearch() {
   results.innerHTML = '<em style="color:var(--text-muted); font-size:0.9rem;">Searching…</em>';
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://serious-cooking-api.timmo59.workers.dev', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
