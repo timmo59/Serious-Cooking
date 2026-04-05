@@ -1,0 +1,2656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serious Cooking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,900;1,400;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1612;
+    --charcoal: #2c2520;
+    --mahogany: #3d2b1f;
+    --brass: #b8924a;
+    --brass-light: #d4aa6a;
+    --cream: #faf7f2;
+    --paper: #f4f0e8;
+    --warm-white: #ffffff;
+    --text-body: #2c2520;
+    --text-muted: #6b5d52;
+    --text-light: #9b8c82;
+    --border: #e0d5c8;
+    --border-strong: #c8bdb0;
+    --accent-red: #8b2e1a;
+    --section-bg: #f8f5f0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--cream);
+    color: var(--text-body);
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  /* ── HEADER ── */
+  #site-header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 2px solid var(--brass);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    height: 64px;
+  }
+
+  .site-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: var(--cream);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .site-title .title-mark {
+    color: var(--brass);
+    font-style: italic;
+  }
+
+  .site-title .knife-icon {
+    width: 22px;
+    height: 22px;
+    opacity: 0.8;
+  }
+
+  /* ── PRIMARY NAV ── */
+  #primary-nav {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    height: 100%;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: #c8bdb0;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 0 1.2rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s, background 0.15s;
+    border-bottom: 3px solid transparent;
+    position: relative;
+    top: 2px;
+  }
+
+  .nav-btn:hover { color: var(--cream); background: rgba(255,255,255,0.05); }
+  .nav-btn.active { color: var(--brass-light); border-bottom-color: var(--brass); }
+
+  /* ── SECTIONS ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── PAGE LAYOUT ── */
+  .page-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+  }
+
+  /* ── SECTION HERO ── */
+  .section-hero {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 3.5rem 2rem 3rem;
+    border-bottom: 2px solid var(--brass);
+  }
+
+  .section-hero-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brass);
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-hero p {
+    font-size: 1.05rem;
+    color: #a09488;
+    max-width: 640px;
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  /* ── AI CHAT ── */
+  #chat-panel {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 2px 12px rgba(26,22,18,0.08);
+  }
+
+  #chat-panel .chat-header {
+    background: var(--charcoal);
+    color: var(--cream);
+    padding: 0.9rem 1.4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .chat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brass); }
+
+  #chat-messages {
+    min-height: 120px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .msg {
+    max-width: 82%;
+    padding: 0.75rem 1rem;
+    border-radius: 3px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .msg.user {
+    align-self: flex-end;
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 3px 3px 0 3px;
+  }
+
+  .msg.assistant {
+    align-self: flex-start;
+    background: var(--section-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px 3px 3px 0;
+  }
+
+  .msg.thinking {
+    align-self: flex-start;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9rem;
+    background: none;
+    padding-left: 0;
+  }
+
+  #chat-input-row {
+    display: flex;
+    border-top: 1px solid var(--border);
+  }
+
+  #chat-input {
+    flex: 1;
+    border: none;
+    padding: 1rem 1.2rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    color: var(--text-body);
+    background: var(--warm-white);
+    outline: none;
+    resize: none;
+    min-height: 52px;
+  }
+
+  #chat-input::placeholder { color: var(--text-light); font-style: italic; }
+
+  #chat-send {
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    padding: 0 1.4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+
+  #chat-send:hover { background: var(--mahogany); }
+  #chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── RECIPE SECTION ── */
+  .recipe-toolbar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .recipe-toolbar input[type="text"] {
+    flex: 1;
+    min-width: 220px;
+    border: 1px solid var(--border-strong);
+    padding: 0.65rem 1rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    background: var(--warm-white);
+    color: var(--text-body);
+    outline: none;
+    border-radius: 2px;
+  }
+
+  .recipe-toolbar input:focus { border-color: var(--brass); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1.2rem;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { background: var(--mahogany); }
+  .btn.btn-outline {
+    background: transparent;
+    color: var(--text-body);
+    border: 1px solid var(--border-strong);
+  }
+  .btn.btn-outline:hover { background: var(--section-bg); }
+  .btn.btn-brass {
+    background: var(--brass);
+    color: var(--ink);
+  }
+  .btn.btn-brass:hover { background: var(--brass-light); }
+
+  /* Category pills */
+  .category-bar {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .cat-pill {
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--border-strong);
+    background: var(--warm-white);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all 0.15s;
+    color: var(--text-muted);
+  }
+
+  .cat-pill:hover, .cat-pill.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+
+  /* Recipe cards */
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .recipe-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+
+  .recipe-card:hover {
+    box-shadow: 0 4px 20px rgba(26,22,18,0.12);
+    transform: translateY(-2px);
+  }
+
+  .recipe-card-body { padding: 1.2rem; }
+
+  .recipe-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--ink);
+  }
+
+  .recipe-card .recipe-meta {
+    font-size: 0.78rem;
+    color: var(--text-light);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .recipe-card p {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .recipe-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1.2rem;
+    border-top: 1px solid var(--border);
+    background: var(--section-bg);
+  }
+
+  .recipe-card-actions button {
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.2rem 0.4rem;
+    transition: color 0.15s;
+  }
+
+  .recipe-card-actions button:hover { color: var(--accent-red); }
+
+  .empty-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-light);
+  }
+
+  .empty-state .big-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state p { font-style: italic; }
+
+  /* Recipe modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,22,18,0.7);
+    z-index: 200;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 3rem 1rem;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--warm-white);
+    width: 100%;
+    max-width: 720px;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    margin: auto;
+  }
+
+  .modal-header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .modal-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: #9b8c82;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .modal-close:hover { color: var(--cream); }
+
+  .modal-body { padding: 2rem; }
+
+  .modal-body textarea {
+    width: 100%;
+    min-height: 260px;
+    border: 1px solid var(--border-strong);
+    padding: 1rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    color: var(--text-body);
+    background: var(--warm-white);
+    resize: vertical;
+    outline: none;
+    border-radius: 2px;
+    line-height: 1.6;
+  }
+
+  .modal-body textarea:focus { border-color: var(--brass); }
+
+  .modal-footer {
+    padding: 1rem 2rem;
+    background: var(--section-bg);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  /* ── KNOWLEDGE SECTIONS ── */
+  .knowledge-nav {
+    background: var(--charcoal);
+    border-bottom: 1px solid rgba(184,146,74,0.3);
+    padding: 0;
+    overflow-x: auto;
+  }
+
+  .knowledge-nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0;
+    padding: 0 2rem;
+  }
+
+  .know-tab {
+    background: none;
+    border: none;
+    color: #9b8c82;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.82rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    padding: 0.9rem 1.1rem;
+    white-space: nowrap;
+    transition: color 0.15s;
+    border-bottom: 2px solid transparent;
+    position: relative;
+    top: 1px;
+  }
+
+  .know-tab:hover { color: var(--cream); }
+  .know-tab.active { color: var(--brass-light); border-bottom-color: var(--brass); }
+
+  .knowledge-panel { display: none; }
+  .knowledge-panel.active { display: block; }
+
+  /* ── CONTENT TYPOGRAPHY ── */
+  .prose h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink);
+  }
+
+  .prose h2:first-child { margin-top: 0; }
+
+  .prose h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 2rem 0 0.6rem;
+    color: var(--charcoal);
+  }
+
+  .prose h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin: 1.8rem 0 0.5rem;
+  }
+
+  .prose h5 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.4rem 0 0.4rem;
+    font-style: italic;
+    color: var(--charcoal);
+  }
+
+  .prose p { margin-bottom: 1rem; }
+
+  .prose strong { color: var(--ink); font-weight: 600; }
+
+  .prose em { font-style: italic; }
+
+  .prose a { color: var(--brass); text-decoration: none; border-bottom: 1px solid currentColor; }
+  .prose a:hover { color: var(--accent-red); }
+
+  /* Accordion items */
+  .accordion-item {
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-bottom: 0.6rem;
+    overflow: hidden;
+    background: var(--warm-white);
+  }
+
+  .accordion-trigger {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 1rem 1.3rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    color: var(--text-body);
+    transition: background 0.15s;
+  }
+
+  .accordion-trigger:hover { background: var(--section-bg); }
+
+  .accordion-trigger .acc-arrow {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .accordion-item.open .acc-arrow { transform: rotate(180deg); }
+
+  .accordion-body {
+    display: none;
+    padding: 1.2rem 1.3rem 1.4rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.93rem;
+    line-height: 1.65;
+    background: var(--section-bg);
+  }
+
+  .accordion-item.open .accordion-body { display: block; }
+
+  .accordion-body p { margin-bottom: 0.8rem; }
+  .accordion-body p:last-child { margin-bottom: 0; }
+  .accordion-body strong { color: var(--ink); }
+
+  /* Tables */
+  .prose table, .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.8rem;
+    font-size: 0.88rem;
+  }
+
+  .prose th, .table-wrap th {
+    background: var(--charcoal);
+    color: var(--cream);
+    text-align: left;
+    padding: 0.6rem 0.9rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .prose td, .table-wrap td {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .prose tr:nth-child(even) td, .table-wrap tr:nth-child(even) td {
+    background: var(--section-bg);
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
+
+  /* Callout boxes */
+  .callout {
+    border-left: 3px solid var(--brass);
+    background: var(--section-bg);
+    padding: 1rem 1.3rem;
+    margin: 1.5rem 0;
+    font-size: 0.93rem;
+  }
+
+  .callout.red { border-color: var(--accent-red); }
+
+  .callout .callout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--brass);
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+  }
+
+  .callout.red .callout-label { color: var(--accent-red); }
+
+  /* Sub-nav grid for knowledge sections */
+  .sub-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 0.75rem;
+    margin: 2rem 0 2.5rem;
+  }
+
+  .sub-nav-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    padding: 1rem 1.2rem;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .sub-nav-card:hover {
+    border-color: var(--brass);
+    background: var(--section-bg);
+  }
+
+  .sub-nav-card .card-icon { font-size: 1.3rem; }
+
+  .sub-nav-card .card-label {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.88rem;
+    color: var(--text-body);
+    line-height: 1.3;
+  }
+
+  /* Divider rule */
+  .rule {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  .rule-brass {
+    border-color: var(--brass);
+    opacity: 0.4;
+  }
+
+  /* Web search area */
+  .search-panel {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .search-row input {
+    flex: 1;
+    border: 1px solid var(--border-strong);
+    padding: 0.7rem 1rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    background: var(--cream);
+    outline: none;
+    border-radius: 2px;
+  }
+
+  .search-row input:focus { border-color: var(--brass); }
+
+  #search-results {
+    margin-top: 1.2rem;
+    display: none;
+  }
+
+  #search-results .result-link {
+    display: block;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text-body);
+    transition: color 0.15s;
+  }
+
+  #search-results .result-link:hover { color: var(--brass); }
+  #search-results .result-link strong { display: block; margin-bottom: 0.2rem; }
+  #search-results .result-link small { color: var(--text-muted); font-size: 0.82rem; }
+
+  /* Import button styling */
+  input[type="file"] { display: none; }
+
+  /* Temp storage display */
+  #data-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--section-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    align-items: center;
+  }
+
+  #data-actions span {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    flex: 1;
+  }
+
+  /* Charcuterie & Curing section styles */
+  .process-timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin: 1.5rem 0;
+  }
+
+  .process-timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--brass);
+    opacity: 0.4;
+  }
+
+  .timeline-step {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .timeline-step::before {
+    content: '';
+    position: absolute;
+    left: -1.7rem;
+    top: 0.4rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--brass);
+  }
+
+  .timeline-step h5 {
+    margin-top: 0;
+    font-family: 'Playfair Display', serif;
+    font-style: normal;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .timeline-step p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0;
+  }
+
+  /* Cure calc */
+  .cure-calc {
+    background: var(--section-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .cure-calc h4 { margin-top: 0; color: var(--text-muted); }
+
+  .calc-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .calc-field { display: flex; flex-direction: column; gap: 0.3rem; }
+
+  .calc-field label {
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .calc-field input, .calc-field select {
+    border: 1px solid var(--border-strong);
+    padding: 0.5rem 0.75rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    background: var(--warm-white);
+    outline: none;
+    border-radius: 2px;
+    width: 140px;
+  }
+
+  .calc-field input:focus, .calc-field select:focus { border-color: var(--brass); }
+
+  .calc-result {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 1rem 1.2rem;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    display: none;
+  }
+
+  .calc-result.show { display: block; }
+  .calc-result .result-label { color: var(--brass); }
+
+  /* Temperature reference card */
+  .temp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 1rem 0 1.5rem;
+  }
+
+  .temp-cell {
+    background: var(--warm-white);
+    padding: 0.9rem 1rem;
+  }
+
+  .temp-cell .protein {
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-light);
+    margin-bottom: 0.25rem;
+  }
+
+  .temp-cell .temp {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .temp-cell .note {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header-inner { padding: 0 1rem; }
+    .nav-btn { padding: 0 0.7rem; font-size: 0.75rem; }
+    .page-content { padding: 1.5rem 1rem 4rem; }
+    .section-hero { padding: 2rem 1rem; }
+    .section-hero-inner { padding: 0; }
+    .recipe-grid { grid-template-columns: 1fr; }
+    .knowledge-nav-inner { padding: 0 1rem; }
+    .calc-row { flex-direction: column; }
+    .calc-field input, .calc-field select { width: 100%; }
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section.active .page-content,
+  .section.active .section-hero { animation: fadeIn 0.25s ease; }
+
+  .knowledge-panel.active { animation: fadeIn 0.2s ease; }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header id="site-header">
+  <div class="header-inner">
+    <a class="site-title" href="#">
+      <svg class="knife-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M20 4L8 16M8 16l-4 4M8 16l-2-2" stroke-linecap="round"/>
+        <path d="M14 4h6v6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Serious <span class="title-mark">Cooking</span>
+    </a>
+    <nav id="primary-nav">
+      <button class="nav-btn active" data-section="consult">Consult</button>
+      <button class="nav-btn" data-section="recipes">Recipes</button>
+      <button class="nav-btn" data-section="techniques">Foundations</button>
+      <button class="nav-btn" data-section="science">Science</button>
+      <button class="nav-btn" data-section="charcuterie">Charcuterie</button>
+      <button class="nav-btn" data-section="reference">Reference</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: CONSULT (AI Chat)
+══════════════════════════════════════════════ -->
+<section id="section-consult" class="section active">
+  <div class="section-hero">
+    <div class="section-hero-inner">
+      <span class="section-label">AI Kitchen Consult</span>
+      <h1>Ask anything.</h1>
+      <p>Technique questions, flavor pairings, timing, substitutions, troubleshooting mid-cook — whatever you need.</p>
+    </div>
+  </div>
+  <div class="page-content">
+    <div id="chat-panel">
+      <div class="chat-header">
+        <div class="chat-dot"></div>
+        Kitchen Consult — Claude
+      </div>
+      <div id="chat-messages">
+        <div class="msg assistant">Ready. What are you working on?</div>
+      </div>
+      <div id="chat-input-row">
+        <textarea id="chat-input" placeholder="Ask about technique, timing, flavor, substitutions…" rows="1"></textarea>
+        <button id="chat-send">Send</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: RECIPES
+══════════════════════════════════════════════ -->
+<section id="section-recipes" class="section">
+  <div class="section-hero">
+    <div class="section-hero-inner">
+      <span class="section-label">Recipe Collection</span>
+      <h1>Your recipes.</h1>
+      <p>Saved URLs, personal notes, imported documents. Everything in one place.</p>
+    </div>
+  </div>
+  <div class="page-content">
+    <div id="data-actions">
+      <span id="recipe-count-label">0 recipes saved</span>
+      <button class="btn btn-outline" onclick="exportRecipes()">⬇ Export</button>
+      <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">⬆ Import JSON</button>
+      <input type="file" id="import-file" accept=".json" onchange="importRecipes(event)">
+      <label class="btn btn-outline" for="import-doc">📄 Import .docx / .pdf</label>
+      <input type="file" id="import-doc" accept=".docx,.pdf" onchange="importDocument(event)">
+    </div>
+
+    <div class="recipe-toolbar">
+      <input type="text" id="recipe-search" placeholder="Search recipes…" oninput="filterRecipes()">
+      <button class="btn btn-brass" onclick="openNewRecipe()">+ New Recipe</button>
+      <button class="btn" onclick="openWebSearch()">🔍 Find Online</button>
+    </div>
+
+    <div class="category-bar" id="category-bar">
+      <span class="cat-pill active" data-cat="all">All</span>
+    </div>
+
+    <div class="recipe-grid" id="recipe-grid">
+      <div class="empty-state">
+        <div class="big-icon">📖</div>
+        <p>No recipes yet. Add one with <strong>+ New Recipe</strong> or import a document.</p>
+      </div>
+    </div>
+
+    <!-- Web search panel -->
+    <div class="search-panel" id="web-search-panel" style="display:none; margin-top:2rem;">
+      <h3 style="font-family:'Playfair Display',serif; margin-bottom:1rem; font-size:1.1rem;">Find a Recipe Online</h3>
+      <div class="search-row">
+        <input type="text" id="web-search-input" placeholder="e.g. braised lamb shanks with gremolata…">
+        <button class="btn" onclick="doWebSearch()">Search</button>
+      </div>
+      <div id="search-results"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: TECHNIQUES
+══════════════════════════════════════════════ -->
+<section id="section-techniques" class="section">
+  <div class="section-hero">
+    <div class="section-hero-inner">
+      <span class="section-label">Foundations</span>
+      <h1>The classical foundation.</h1>
+      <p>Grand sauces and their derivatives, heat methods, core skills, and doneness — the structural knowledge behind serious cooking.</p>
+    </div>
+  </div>
+
+  <div class="knowledge-nav">
+    <div class="knowledge-nav-inner">
+      <button class="know-tab active" data-panel="t-sauces">Grand Sauces</button>
+      <button class="know-tab" data-panel="t-heat">Heat Methods</button>
+      <button class="know-tab" data-panel="t-skills">Core Skills</button>
+      <button class="know-tab" data-panel="t-doneness">Doneness</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Grand Sauces -->
+    <div class="knowledge-panel active" id="t-sauces">
+      <div class="prose">
+        <h2>The Grand Sauces</h2>
+        <p>Antonin Carême identified four grandes sauces in the early 19th century; Auguste Escoffier codified five in <em>Le Guide Culinaire</em> (1903): Espagnole, Velouté, Béchamel, Sauce Tomat, and Hollandaise. These are not museum pieces — they are the structural grammar of classical and modern French sauce work. Every compound sauce descends from one of them. Understand the mother, and the derivatives are logical rather than memorized.</p>
+        <p>The organizing principle is the thickening agent and the liquid: <strong>roux + brown stock</strong> (Espagnole), <strong>roux + white stock</strong> (Velouté), <strong>roux + milk</strong> (Béchamel), <strong>reduction + tomato</strong> (Tomat), <strong>emulsified butter + egg yolk</strong> (Hollandaise). Everything else is variation on these five structures.</p>
+      </div>
+
+      <!-- ESPAGNOLE -->
+      <div class="accordion-item open">
+        <button class="accordion-trigger">Espagnole &amp; Demi-Glace <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>The brown sauce family. Espagnole is the mother; demi-glace is Espagnole reduced with additional brown stock to a rich, nappant consistency. In modern kitchens, demi-glace has largely replaced the more labor-intensive Espagnole as the working base sauce.</p>
+          <p><strong>Foundation:</strong> A dark brown roux (cook the roux past blond to a deep brown — the starch partially converts to dextrins, which thicken less but contribute color and a nutty flavor). Add mirepoix, tomato paste (cook until brick-red to drive off excess moisture and concentrate the glutamates), then brown stock. Simmer, skim, strain. The result is Espagnole.</p>
+          <p><strong>Demi-glace:</strong> Combine equal parts Espagnole and brown stock. Reduce by half. The gelatin from the stock concentrates, creating the lip-coating richness that distinguishes a proper demi from a cornstarch-thickened shortcut. A proper demi-glace sets firmly when chilled.</p>
+
+          <div class="callout" style="margin: 1rem 0;">
+            <span class="callout-label">Key Derivatives</span>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Bordelaise</strong> — Demi-glace mounted with shallot reduction in red Bordeaux wine, finished with bone marrow. Serve with grilled beef.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Chasseur</strong> — Demi-glace with white wine, tomato concassée, shallots, mushrooms, tarragon. Classic with sautéed chicken.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Périgourdine</strong> — Demi-glace with Madeira wine and black truffle (or truffle juice). The prestige sauce of the Périgord.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Madère</strong> — Demi-glace deglazed with Madeira. Reduced and mounted. Versatile with beef, sweetbreads, ham.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Diable</strong> — Demi-glace with dry white wine, shallot reduction, cayenne and black pepper. Serve with grilled or deviled chicken.</p>
+            <p style="margin-bottom:0;"><strong>Sauce Robert</strong> — Demi-glace with white wine, onion reduction, Dijon mustard (added off heat — mustard's emulsifying power drops sharply above 160°F). Classic with pork.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- VELOUTÉ -->
+      <div class="accordion-item">
+        <button class="accordion-trigger">Velouté &amp; Derivatives <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>White roux + white stock (veal, chicken, or fish). The stock determines the application — veal velouté for veal and pork dishes, chicken velouté for poultry, fish velouté (fumet de poisson + roux) for seafood. The result is pale ivory, silky, and neutral enough to carry a wide range of flavors.</p>
+          <p><strong>Roux ratio:</strong> 70g butter + 70g flour per liter of stock for a medium-body velouté. Cook the roux briefly — just until the raw flour smell cooks out and the mixture is pale blond. Add the hot stock in a steady stream while whisking. Simmer 20–30 minutes, skimming frequently, until the starchy taste is gone.</p>
+          <p><strong>Sauce Allemande</strong> (also called Sauce Parisienne): Velouté enriched with egg yolk liaison (egg yolks beaten with cream, tempered into the hot sauce, then gently cooked to just below a boil). The liaison thickens through protein coagulation rather than starch and gives a richer, more velvety result. This sauce must not boil after the liaison is added — the yolks scramble.</p>
+
+          <div class="callout" style="margin: 1rem 0;">
+            <span class="callout-label">Key Derivatives</span>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Suprême</strong> — Chicken velouté reduced with heavy cream. The standard sauce for poached chicken and vol-au-vent. Finish with butter off heat.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Ivoire</strong> — Suprême with meat glaze added for color and depth. Ivory color, clean flavor. Classical service with poached chicken.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Vin Blanc</strong> — Fish velouté reduced with dry white wine and fish fumet, finished with butter. The canonical sauce for poached sole and turbot.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Normande</strong> — Fish velouté enriched with cream and egg yolk liaison, finished with butter. Serve with sole Normande. May include oyster liquor and mushroom essence.</p>
+            <p style="margin-bottom:0;"><strong>Sauce Aurore</strong> — Velouté or suprême with tomato purée added for a pale orange-pink color. Lighter than a tomato sauce; more flavored than a plain velouté.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- BÉCHAMEL -->
+      <div class="accordion-item">
+        <button class="accordion-trigger">Béchamel &amp; Derivatives <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>White roux + hot milk. The simplest of the mother sauces in structure, and the most likely to go wrong through inattention. Named for Louis de Béchameil, a 17th-century financier whose chef (reportedly) developed the sauce — though the actual origins are disputed.</p>
+          <p><strong>Roux ratio:</strong> 70g butter + 70g flour per liter of milk for medium body (coating consistency). 100g/100g for thick (gratin, soufflé base). Use whole milk for richness. Heat the milk separately before adding to the roux — cold milk added to hot roux creates lumps. Add in three stages, whisking vigorously after each addition. Simmer 15–20 minutes. Season with salt, white pepper, and freshly grated nutmeg — nutmeg is inseparable from béchamel.</p>
+          <p><strong>The lump problem:</strong> Caused by adding liquid too fast or cold. If it happens: pass through a fine sieve and whisk; if severe, blend with an immersion blender. The starch network is the issue, not the protein — the lumps are gelatinized starch clumps that can be broken apart mechanically.</p>
+
+          <div class="callout" style="margin: 1rem 0;">
+            <span class="callout-label">Key Derivatives</span>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Mornay</strong> — Béchamel finished with grated Gruyère and Parmesan (or Comté). The standard cheese sauce for gratins, croque monsieur, cauliflower gratin, eggs Florentine. Add cheese off heat; high heat causes the proteins to tighten and the fat to separate.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Soubise</strong> — Béchamel combined with a purée of sweated onions (cook onions slowly in butter until completely soft and sweet, never coloring). Classic accompaniment to lamb and mutton.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Crème</strong> — Béchamel enriched with heavy cream, reduced slightly. Lighter in character than straight béchamel, used where a more refined texture is needed.</p>
+            <p style="margin-bottom:0;"><strong>Soufflé base</strong> — A thick béchamel (100g roux per liter) forms the structural base of savory soufflés. The starch network holds the beaten egg whites during baking. Without adequate béchamel, the soufflé collapses as the foam structure fails.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAUCE TOMAT -->
+      <div class="accordion-item">
+        <button class="accordion-trigger">Sauce Tomat &amp; Derivatives <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>The only grand sauce not dependent on a roux as its primary thickener. Escoffier's sauce tomat used salt pork, mirepoix, tomatoes, and light veal stock, thickened partly with roux and partly with reduction. The modern interpretation has largely dropped the roux and relies on concentration of the tomato solids themselves.</p>
+          <p><strong>The flavor build:</strong> Render fat (salt pork, pancetta, or olive oil). Sweat onion and garlic. Add tomato paste and cook until brick-red (this drives off the raw, acidic edge and concentrates the glutamate content, deepening umami). Add whole or crushed tomatoes. Reduce. Season late — tomatoes concentrate their acidity and salt as they reduce. A pinch of sugar corrects excess acidity; it does not "sweeten" the sauce if used judiciously.</p>
+          <p><strong>On canned vs. fresh:</strong> San Marzano DOP or good quality California plum tomatoes are preferable to out-of-season fresh. Canning concentrates the flavor and softens the pectin, producing a more consistent result than winter field tomatoes.</p>
+
+          <div class="callout" style="margin: 1rem 0;">
+            <span class="callout-label">Key Derivatives</span>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Américaine</strong> — Tomato sauce base with lobster shells, cognac, white wine, fish fumet, and cream. Technically complex; the bisque-like base is built from the shell-infused fat. Classically served with lobster à l'américaine and monkfish.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Arrabbiata</strong> — Tomato base with significant amounts of dried chili. The heat should be direct and clean, not muddy. Don't add cheese — the fat from the cheese disrupts the clean acid-heat balance.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Bolognese (ragù)</strong> — Extended tomato sauce enriched with ground and/or braised meat, soffritto, white wine, and milk. The milk softens the meat proteins and balances the tomato's acidity. Proper bolognese simmers for 3–4 hours; the meat should be indistinguishable from the sauce.</p>
+            <p style="margin-bottom:0;"><strong>Sauce Pizzaiola</strong> — Light tomato sauce with oregano, garlic, and olive oil. Applied to pan-seared beef, chicken, or pork after cooking, simmered briefly together. The sauce should be loose and bright, not reduced.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOLLANDAISE -->
+      <div class="accordion-item">
+        <button class="accordion-trigger">Hollandaise &amp; Derivatives <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>The only mother sauce based on an emulsion rather than a roux. Hollandaise is a warm butter emulsion stabilized by egg yolk lecithin and held in a narrow temperature range. It is inherently unstable — it will break if too hot, too cold, or worked too aggressively — and must be made to order or held carefully.</p>
+          <p><strong>Method:</strong> Reduce white wine and white wine vinegar with shallots and peppercorns to 2–3 tablespoons. Strain. Combine with egg yolks in a bain-marie (bowl over simmering water, not touching the water). Whisk over gentle heat until the yolks are thick, pale, and leave a ribbon — the ribbon stage (sabayon). The temperature should not exceed 160°F or the yolks will scramble. Remove from heat. Whisk in clarified butter in a thin, steady stream. Season with salt, cayenne, and lemon juice. Serve immediately or hold at 140°F.</p>
+          <p><strong>Clarified vs. whole butter:</strong> Clarified butter (ghee) produces a more stable emulsion because the water and milk solids have been removed — the sauce is purely fat droplets in the yolk emulsion. Whole butter produces a sauce with more flavor complexity (from the milk solids) but is slightly less stable. Most classical preparations use clarified.</p>
+          <p><strong>Recovery:</strong> A broken hollandaise (separated, greasy) can sometimes be recovered if it broke from temperature and not from protein coagulation: start with a fresh egg yolk in a clean bowl, add the broken sauce drop by drop while whisking. If the yolks scrambled from excessive heat, the batch must be discarded.</p>
+
+          <div class="callout" style="margin: 1rem 0;">
+            <span class="callout-label">Key Derivatives</span>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Béarnaise</strong> — The most important derivative. Replace the wine/vinegar reduction with a reduction of dry white wine, white wine vinegar, shallots, and tarragon. Add fresh tarragon and chervil at the end. The herb must be added raw to the finished sauce — cooked tarragon loses its distinctive estragole character. Béarnaise is the canonical accompaniment to grilled beef.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Choron</strong> — Béarnaise with tomato concassée or tomato purée folded in. The tomato adds a slight sweetness and color. Serve with grilled fish and shellfish.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Foyot (Valois)</strong> — Béarnaise with meat glaze (glace de viande) stirred in. Adds depth and color. Good with grilled beef and lamb.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Sauce Maltaise</strong> — Hollandaise finished with blood orange juice and zest. Seasonal (blood oranges, January–March). Classical with asparagus.</p>
+            <p style="margin-bottom:0;"><strong>Sauce Mousseline (Chantilly)</strong> — Hollandaise lightened with softly whipped cream folded in just before service. The cream reduces the richness and gives a lighter, airier texture. Serve immediately — it deflates quickly.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- BEURRE BLANC -->
+      <div class="accordion-item">
+        <button class="accordion-trigger">Beurre Blanc &amp; Butter Sauces <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Beurre blanc is technically not a grand sauce in Escoffier's classification, but it is indispensable in the modern French kitchen and deserves treatment alongside the mother sauces. It is a warm butter emulsion without egg yolk — the emulsifiers are the milk solids in the butter itself, which makes it far more delicate than hollandaise.</p>
+          <p><strong>Method:</strong> Reduce dry white wine and white wine vinegar with minced shallots until almost dry — 1–2 tablespoons remain. Add a small amount of heavy cream (optional — it adds stability). Over very low heat, whisk in cold butter cut into small cubes, one piece at a time, maintaining the temperature between 130–150°F. The butter should emulsify into a creamy, ivory sauce. Season with salt and white pepper. Strain out the shallots or leave them in for texture.</p>
+          <p><strong>Stability:</strong> Beurre blanc is the least stable of all butter sauces. It breaks above 160°F (the milk solids melt out) and seizes below 100°F (the fat solidifies). Hold in a warm bain-marie at 130–140°F. Adding cream before mounting the butter significantly improves stability — the cream's proteins act as additional emulsifiers.</p>
+          <p><strong>The cream debate:</strong> Traditionalists omit cream; it is not part of the original Nantes preparation. From a pure technique standpoint, cream produces a more stable sauce that holds better in service. Make your choice based on context — classical service or practical kitchen.</p>
+
+          <div class="callout" style="margin: 1rem 0;">
+            <span class="callout-label">Variations</span>
+            <p style="margin-bottom:0.4rem;"><strong>Beurre Rouge</strong> — Same method using red wine reduction instead of white wine. Color is pink to deep red depending on wine and reduction. Serve with red meat and duck.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Beurre Nantais</strong> — The traditional Nantes version using Muscadet. No cream; shallots left in. The original beurre blanc.</p>
+            <p style="margin-bottom:0.4rem;"><strong>Beurre Noisette</strong> — Not an emulsion but a transformation: whole butter cooked until the milk solids brown (Maillard reaction at 250–300°F) and develop a nutty aroma. Brown butter used as a finishing sauce for fish, vegetables, and pasta. The next stage — beurre noir — pushes further to deep brown, used with skate and calf's brain in the traditional bistro kitchen.</p>
+            <p style="margin-bottom:0;"><strong>Pan sauces (jus lié)</strong> — The workhorse of everyday restaurant cooking: deglaze the fond with wine or spirit, reduce, add stock or demi-glace, reduce again, mount with cold butter off heat. Not a classical sauce per se, but the direct expression of the same principles.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="prose" style="margin-top:2rem;">
+        <h3>The Sauce Family Tree</h3>
+        <p>A quick orientation of the full derivative structure:</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Mother Sauce</th><th>Secondary Sauces</th><th>Selected Derivatives</th></tr>
+          <tr><td><strong>Espagnole</strong></td><td>Demi-glace</td><td>Bordelaise, Chasseur, Périgourdine, Madère, Robert, Diable, Poivrade, Grand Veneur</td></tr>
+          <tr><td><strong>Velouté</strong></td><td>Allemande, Suprême, Vin Blanc</td><td>Ivoire, Poulette, Normande, Aurore, Bercy, Ravigote (warm)</td></tr>
+          <tr><td><strong>Béchamel</strong></td><td>Mornay, Soubise, Crème</td><td>Nantua (with crayfish butter), Cardinal (with lobster butter), Écossaise</td></tr>
+          <tr><td><strong>Sauce Tomat</strong></td><td>Sauce Tomat enriched variations</td><td>Américaine, Provençale, Bolognese, Pizzaiola, Arrabbiata</td></tr>
+          <tr><td><strong>Hollandaise</strong></td><td>Béarnaise, Mousseline, Maltaise</td><td>Choron, Foyot/Valois, Paloise (mint béarnaise), Divine</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Heat Methods (consolidated Dry + Moist + Combination) -->
+    <div class="knowledge-panel" id="t-heat">
+      <div class="prose">
+        <h2>Heat Methods</h2>
+        <p>Every cooking method is either dry heat, moist heat, or a combination. Dry heat drives off surface moisture and creates browning; moist heat transfers energy through water or steam; combination methods use both in sequence to achieve results neither can accomplish alone.</p>
+      </div>
+
+      <div class="prose"><h3>Dry Heat</h3></div>
+
+      <div class="accordion-item open">
+        <button class="accordion-trigger">Searing <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Searing is high conductive heat applied to a dry surface. The Maillard reaction — the cascade of amino acid and reducing sugar interactions that produces hundreds of flavor compounds — requires surface temperatures above 280°F (140°C). It is not "sealing in juices." That myth, rooted in Justus von Liebig's 1847 hypothesis, has been definitively disproven. Juices are not sealed.</p>
+          <p><strong>The pan:</strong> Use stainless steel or carbon steel for maximum fond development. Cast iron works but holds a cold spot where meat is placed. Nonstick pans cannot reach searing temperature without damaging the coating.</p>
+          <p><strong>The surface:</strong> Completely dry. Pat with paper towels, then let the meat rest uncovered on a rack for 20–30 minutes. Surface moisture converts to steam before the surface reaches browning temperature, steaming the meat instead of searing it.</p>
+          <p><strong>Oil:</strong> High smoke point required — avocado (520°F), grapeseed (420°F), or refined vegetable oil. EVOO smoke point (375°F) is too low at searing temperatures.</p>
+          <p><strong>The tell:</strong> Properly seared meat releases from the pan when the crust forms. If it's sticking, it's not ready to flip. Forcing it tears the crust and costs fond.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Sautéing <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p><em>Sauter</em> — to jump. High heat, small amount of fat, continuous movement. The distinction from searing: you are browning while keeping the food in motion, not developing a static crust. The goal is color and cooked-through without overcooking the center.</p>
+          <p><strong>Pan temperature:</strong> Heat the pan dry first, then add fat. Test with a drop of water — it should bead and skitter immediately.</p>
+          <p><strong>Crowding:</strong> The surface area of the pan determines how much you can sauté without steaming. The moisture released by food must be able to evaporate. If the food is more than one layer deep, you are stewing, not sautéing.</p>
+          <p><strong>Fond:</strong> The brown deposits (fond brun) adhering to the pan are caramelized proteins and sugars — the foundation of any pan sauce. Deglaze immediately with wine or stock and scrape.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Roasting <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Convective dry heat in an enclosed space. Air is far less efficient than water as a heat transfer medium, which is why roasting takes longer but also gives more control over the rate of browning vs. interior cooking.</p>
+          <p><strong>High-heat (400–500°F):</strong> Aggressive exterior browning, short time — vegetables, chicken parts, duck legs. Drives off surface moisture fast, creating caramelization before the interior overcooks.</p>
+          <p><strong>Low-heat (275–325°F):</strong> For large cuts needing gradual interior temperature rise without burning the exterior — prime rib, pork loin, whole birds. The exterior browns slowly; the gradient between done and raw is gentler.</p>
+          <p><strong>Reverse-sear:</strong> Low oven first until 10–15°F below target, then a hard sear to finish. Produces the thinnest possible overcooked band at the surface and the most uniform doneness throughout. Superior to high-then-low for thick cuts.</p>
+          <p><strong>Convection:</strong> Fans increase the heat transfer coefficient by 25–30%. Reduce conventional recipe temperatures by 25°F or time by 20–25%. Browning is more aggressive and more even.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Grilling &amp; Broiling <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p><strong>Grilling</strong> is radiant heat from below through a grate. The grate marks are concentrated Maillard zones where metal contacts food; the spaces between cook by radiant heat, which is gentler. Two-zone setup is essential for anything over ¾ inch thick — sear over direct heat, finish over indirect. Charcoal runs hotter (700°F grate-level) and produces a different flavor profile than gas through fat-on-coal vaporization.</p>
+          <p><strong>Broiling</strong> is grilling inverted — radiant heat from above. Primarily used for finish work: gratins, French onion soup, charring peppers, browning hollandaise. Distance from element governs intensity more than thermostat setting. 3–4 inches for aggressive browning; 5–6 inches for controlled coloring. Never leave unattended — the window from perfect to charred is 60–90 seconds.</p>
+        </div>
+      </div>
+
+      <div class="prose" style="margin-top:2rem;"><h3>Moist Heat</h3></div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Simmering, Poaching &amp; Steaming <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Water transfers heat roughly 25× more efficiently than air at the same temperature — moist-heat methods are faster but less forgiving of overshooting doneness.</p>
+          <p><strong>Simmering (180–190°F):</strong> Small, lazy bubbles. The correct temperature for stocks, soups, braises, beans, and grains. Hot enough to extract gelatin from bones, gentle enough to keep proteins from toughening and liquids from clouding. A rolling boil emulsifies fat into stock and clouds the liquid — maintain a true simmer.</p>
+          <p><strong>Poaching (160–180°F):</strong> Barely any surface movement. The gentlest liquid method — ideal for eggs, delicate fish, chicken breast, sweetbreads. Protein denaturation proceeds slowly and evenly, producing uniformly cooked protein without an overcooked exterior. Poach in a flavored liquid (court-bouillon, stock) — the liquid and protein exchange flavors bidirectionally.</p>
+          <p><strong>Steaming (212°F):</strong> Heat via condensation rather than liquid contact. The latent heat of vaporization released when steam contacts cooler food makes steaming surprisingly efficient. No leaching of water-soluble nutrients; no mechanical agitation to break apart delicate items. Pressure steaming (250°F at 15 psi) dramatically accelerates collagen conversion — useful for braise-style results in a fraction of the time.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Stocks — the full picture <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Stock is the foundation. The difference between restaurant cooking and home cooking is largely a stock question — commercial kitchens have stocks simmering constantly; home cooks build on water. That gap in flavor depth is not bridged by seasoning alone.</p>
+          <p><strong>Stock vs. broth:</strong> Stock is made from bones. Bones contain collagen — a structural protein that converts to gelatin over hours of gentle heat. Gelatin gives stock body, mouthfeel, and lip-coating richness. A well-made stock, refrigerated, gels firmly. Broth is made from meat; it has flavor but no structure.</p>
+          <p><strong>Blanc vs. brun:</strong> White stock (fond blanc) uses raw or blanched bones — clear and neutral. Brown stock (fond brun) uses bones roasted to deep mahogany (400–425°F), then deglazed — deeper, more complex from the Maillard reaction on the bone surface. Use brown where the stock announces itself; white where it should disappear into the dish.</p>
+          <p><strong>The cardinal rule:</strong> Never boil a stock. Boiling emulsifies fat into the liquid and agitates proteins into suspension — murky, greasy stock. Maintain a lazy simmer. Skim the grey foam in the first 30–45 minutes — it's coagulated blood proteins and must come off.</p>
+          <p><strong>Mirepoix timing:</strong> Vegetables release flavor faster than bones and turn bitter if overcooked. Add the mirepoix (2:1:1 onion:carrot:celery by weight) in the last 45–60 minutes of a 4-hour chicken stock or 6–8 hour veal stock. No salt — season the dish.</p>
+        </div>
+      </div>
+
+      <div class="prose" style="margin-top:2rem;"><h3>Combination Methods</h3></div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Braising <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Braising exists because collagen — the structural protein in tough cuts — requires sustained heat above 160°F to convert to gelatin. That conversion is time-dependent, not just temperature-dependent. The result is fork-tender meat in a sauce with body and depth from the gelatin itself.</p>
+          <p><strong>The sequence:</strong> Season and dry the meat. Sear hard on all sides — this is the flavor foundation. Remove. Build aromatics in the same fat. Deglaze with wine or stock. Return the meat. Add liquid to come one-third to halfway up — not submerged (that's a stew). Cover tightly. Low oven, 275–325°F, braising liquid at 180–190°F throughout.</p>
+          <p><strong>Doneness:</strong> Fork-tender — a carving fork inserted and twisted meets no resistance. Not the clock. Different cuts, animals, and ages all require different times. A fork knows; a clock does not.</p>
+          <p><strong>The sauce:</strong> Strain the braising liquid. Degrease (refrigerate and lift the solidified fat cap, or use a fat separator). Reduce to nappant consistency. Mount with cold butter. This sauce costs nothing beyond what you've already done — it is the best part.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Stewing &amp; En Cocotte <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p><strong>Stewing:</strong> The democratic version of braising — meat cut into uniform pieces and fully submerged. Everything cooks together; the result is a unified dish rather than a protein with a sauce. Browning each piece of stewing meat (beef bourguignon, daube, navarin) takes patience but produces a fundamentally different dish than the shortcut of adding unbrowned meat to liquid. Add vegetables in stages: dense root vegetables early, delicate greens in the last few minutes.</p>
+          <p><strong>En cocotte:</strong> A whole chicken in a tight-lidded Dutch oven with minimal aromatics and no added liquid. The bird cooks in its own released moisture — steam-roasting in a sealed environment. The result is extraordinarily juicy because nothing evaporates. A fundamentally different texture from a conventionally roasted bird; moister but with less crisp skin.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Stocks — the full picture <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Stock is the foundation. The difference between restaurant cooking and home cooking is largely a stock question. Commercial kitchens have stocks simmering constantly; home cooks build on water. That gap in flavor depth is not bridged by seasoning alone.</p>
+          <p><strong>Stock vs. broth:</strong> Stock is made from bones. Broth is made from meat. Bones contain collagen — a structural protein that converts to gelatin over hours of gentle heat. Gelatin gives stock body, mouthfeel, and the lip-coating richness that distinguishes a proper sauce from a flavored liquid. A well-made stock, refrigerated, should gel firmly.</p>
+          <p><strong>Blanc vs. brun:</strong> White stock (fond blanc) uses raw or blanched bones. The result is clear and neutral — the base for velouté, cream sauces, risotto. Brown stock (fond brun) uses bones roasted to deep mahogany at 400–425°F, then deglazed. The Maillard reaction on the bone surface creates depth that white stock cannot have. Use brown stock where the stock announces itself.</p>
+          <p><strong>The cardinal rule:</strong> Never boil a stock. Boiling emulsifies fat into the liquid and agitates proteins into suspension. You get murky, greasy stock. Maintain a lazy simmer — barely moving. Skim the foam that rises in the first 30–45 minutes. That foam is coagulated blood proteins and needs to come off.</p>
+          <p><strong>Mirepoix timing:</strong> Vegetables release their flavor faster than bones and overcook into bitterness. Add the mirepoix (2:1:1 onion:carrot:celery by weight) in the last 45–60 minutes of a 4-hour chicken stock or 6-8 hour veal stock. No salt — season the dish, not the stock.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Skills -->
+    <div class="knowledge-panel" id="t-skills">
+      <div class="prose">
+        <h2>Core Skills</h2>
+      </div>
+
+      <div class="accordion-item open">
+        <button class="accordion-trigger">Emulsification — sauces that hold <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>An emulsion is a dispersion of one liquid in another immiscible liquid, stabilized by an emulsifier. In the kitchen: fat droplets suspended in a water phase (or vice versa), kept from coalescing by lecithin (from egg yolks), mustard, or casein (from dairy).</p>
+          <p><strong>Oil-in-water emulsions:</strong> Vinaigrette, mayonnaise, hollandaise, béarnaise. The fat is dispersed as droplets within the aqueous phase. The more fat you add per unit of emulsifier, the less stable the emulsion — up to a point where it breaks.</p>
+          <p><strong>Adding fat rate:</strong> The slower the addition of fat while agitating, the smaller the fat droplets and the more stable the emulsion. This is why hollandaise requires slow, thin addition of clarified butter to egg yolk — too fast and the emulsifier cannot stabilize the droplets before they coalesce.</p>
+          <p><strong>Recovering a broken emulsion:</strong> Start fresh with a clean bowl and a small amount of the emulsifier. Add the broken emulsion drop by drop, whisking constantly, until it stabilizes. Then add the remaining fat at a controlled rate. Do not attempt to beat a broken hollandaise back together — the egg proteins have already coagulated if it broke from heat.</p>
+          <p><strong>Beurre blanc:</strong> A warm butter emulsion with no egg yolk. The emulsifiers are the milk solids in butter. It is inherently unstable — maintain at 130–140°F. Too hot and the milk solids melt out; too cold and the fat solidifies. Mounting technique: whisk in cold butter pieces off the heat, using residual pan heat only.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Reduction & concentration <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Reduction is controlled dehydration. As water evaporates, all dissolved and suspended solids — flavor compounds, sugars, proteins, acids, salt — become more concentrated. A 50% reduction roughly doubles flavor intensity and transforms the texture from watery to nappant (sauce-coating).</p>
+          <p><strong>Nappant consistency:</strong> A sauce that "naps the spoon" coats the back of a spoon in a thin even layer that doesn't run off immediately. Drag your finger through — a clean line should remain. This is the standard for a finished sauce.</p>
+          <p><strong>Glace:</strong> Reduce stock by 90%. The result is a syrupy, intensely flavored concentrate — glace de viande (meat), glace de volaille (poultry), glace de poisson (fish). Use by the spoonful to finish sauces, enrich stews, or deepen braises.</p>
+          <p><strong>Watch the salt:</strong> Everything concentrates, including sodium. Season minimally before reducing. Adjust only after the reduction reaches target consistency. An oversalted reduction cannot be corrected short of diluting with more unsalted liquid and reducing again.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Mise en place — the professional standard <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Not a beginner concept dressed up in French. Mise en place is a discipline that determines the quality of execution regardless of skill level. The reason professional kitchens can produce hundreds of covers in a service window is that every element is measured, cut, portioned, and staged before the first ticket comes in.</p>
+          <p>The practical application: read the recipe completely, twice. Identify every prep step. Execute all prep before lighting a burner. Stage ingredients in the order they enter the dish. When you cook, your attention is entirely on what's happening in the pan — not on locating the paprika or discovering you need two tablespoons of something you don't have.</p>
+          <p>The real return: you can actually pay attention to the food. Cooking skill lives in the details of what's happening in the pan, and those details are invisible if half your cognitive load is managing logistics.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-trigger">Knife work — precision cuts <span class="acc-arrow">▾</span></button>
+        <div class="accordion-body">
+          <p>Uniform cuts are not aesthetic preference — they determine whether food cooks evenly. A mixture of small dice and rough chunks on the same pan means some pieces are done while others are raw. The discipline of consistent knife work is inseparable from cooking quality.</p>
+          <p><strong>Classical cuts:</strong> Brunoise (1/8" cube), small dice (1/4"), medium dice (3/8"), large dice (3/4"), julienne (1/8" × 1/8" × 2"), chiffonade (fine ribbon cuts for leaves). These are not arbitrary — they correspond to cooking times and surface-to-volume ratios that affect how the ingredient behaves in the dish.</p>
+          <p><strong>Honing vs. sharpening:</strong> Honing (honing steel or ceramic rod) realigns the edge — it doesn't remove metal. Hone before each use. Sharpening (whetstone or electric sharpener) removes metal to create a new edge. Sharpen when honing no longer restores cutting performance. A sharp knife cuts; a dull knife tears. Torn cell walls release more moisture and accelerate oxidation in cut vegetables.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doneness -->
+    <div class="knowledge-panel" id="t-doneness">
+      <div class="prose">
+        <h2>Temperature & Doneness</h2>
+        <p>Protein coagulation, collagen conversion, and starch gelatinization are temperature-dependent reactions. Here are the numbers that matter.</p>
+      </div>
+
+      <div class="temp-grid">
+        <div class="temp-cell">
+          <div class="protein">Beef — rare</div>
+          <div class="temp">125°F</div>
+          <div class="note">Pull at 118°F</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Beef — medium-rare</div>
+          <div class="temp">130–135°F</div>
+          <div class="note">Pull at 123–128°F</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Beef — medium</div>
+          <div class="temp">140–145°F</div>
+          <div class="note">Pull at 133–138°F</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Lamb</div>
+          <div class="temp">130°F</div>
+          <div class="note">Pull at 123°F (medium-rare)</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Pork loin / chops</div>
+          <div class="temp">145°F</div>
+          <div class="note">Pull at 138°F — light pink is safe</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Pork shoulder (braise)</div>
+          <div class="temp">195–205°F</div>
+          <div class="note">Collagen fully converted</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Chicken breast</div>
+          <div class="temp">160°F</div>
+          <div class="note">Pull at 155°F — carryover finishes</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Chicken thigh (roast)</div>
+          <div class="temp">175°F</div>
+          <div class="note">Higher temp needed for thigh texture</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Duck breast</div>
+          <div class="temp">130–135°F</div>
+          <div class="note">Medium-rare; pull at 128°F</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Salmon — silky</div>
+          <div class="temp">115–120°F</div>
+          <div class="note">Translucent center</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Salmon — fully cooked</div>
+          <div class="temp">130–140°F</div>
+          <div class="note">Flakes clean</div>
+        </div>
+        <div class="temp-cell">
+          <div class="protein">Fish (delicate)</div>
+          <div class="temp">130°F</div>
+          <div class="note">Sole, halibut, cod</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="callout-label">Carryover</span>
+        Thin cuts (chops, fillets): 5°F carryover. Roasts over 4 lb: 8–10°F. Pull accordingly and rest on a wire rack — not a cutting board, where the bottom steams in its own juices.
+      </div>
+
+      <div class="prose">
+        <h3>Carryover & Resting</h3>
+        <p>Resting is not about juice redistribution — this is a common oversimplification. Muscle fibers that have contracted under heat gradually relax as the temperature equilibrates, and the fibrous matrix that holds moisture becomes less tightly bound. The result: less juice runs out when you cut. But the primary value of resting is temperature equilibration between the exterior (which overshot) and the interior (still rising). Cut too soon and the outer third of the meat is significantly overcooked relative to the center. Rest properly and the gradient flattens.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: SCIENCE
+══════════════════════════════════════════════ -->
+<section id="section-science" class="section">
+  <div class="section-hero">
+    <div class="section-hero-inner">
+      <span class="section-label">Cooking Science</span>
+      <h1>The why behind the how.</h1>
+      <p>Food chemistry, ingredient function, and the scientific principles that explain what actually happens in the kitchen.</p>
+    </div>
+  </div>
+
+  <div class="knowledge-nav">
+    <div class="knowledge-nav-inner">
+      <button class="know-tab active" data-panel="s-flavor">Flavor</button>
+      <button class="know-tab" data-panel="s-herbs">Herbs & Spices</button>
+      <button class="know-tab" data-panel="s-baking">Baking Science</button>
+      <button class="know-tab" data-panel="s-proteins">Proteins</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Flavor -->
+    <div class="knowledge-panel active" id="s-flavor">
+      <div class="prose">
+        <h2>Flavor Architecture</h2>
+        <p>Flavor is the composite of taste (the five modalities: salt, sweet, sour, bitter, umami), aroma (the dominant component — 80% of perceived flavor is retronasal olfaction), and trigeminal sensation (heat, cooling, astringency). Understanding these layers allows you to diagnose and correct a dish rather than guess.</p>
+
+        <h3>Salt — function beyond salinity</h3>
+        <p>Sodium ions suppress bitterness by blocking bitter receptors and enhance sweetness, saltiness, and umami. A dish that tastes flat or one-dimensional is almost always undersalted — not because it needs more salt flavor, but because salt is not performing its receptor-modulation function. Season in layers during cooking. Late-added salt seasons only the surface; early-added salt penetrates and modulates from within.</p>
+
+        <h3>Acid — the brightest tool</h3>
+        <p>Acid (pH drop) increases the perception of brightness and freshness, cuts perceived richness and fat, and sharpens the contrast between flavors. A dish that tastes heavy, muddy, or "something's missing" is often an acid problem. A squeeze of lemon or a splash of good vinegar added at the end of cooking can transform a flat dish more dramatically than any other single adjustment.</p>
+        <p>Different acids have different characters: citric acid (lemon, lime) is clean and bright; acetic acid (vinegar) has its own flavor contribution; lactic acid (yogurt, crème fraîche) is soft and rounded; malic acid (wine, green apple) has a tart fruitiness.</p>
+
+        <h3>Fat — the carrier</h3>
+        <p>Most aromatic flavor compounds are fat-soluble, not water-soluble. Fat carries them to the taste receptors and prolongs the time they spend in contact with the palate. This is why a dish finished with butter or good olive oil tastes more complex — the fat is dissolving and delivering volatile aromatics that water cannot carry as effectively. Blooming spices in fat extracts fat-soluble flavor compounds that would otherwise stay locked in the cell walls.</p>
+
+        <h3>Umami — the fifth taste</h3>
+        <p>Glutamate and ribonucleotides (IMP, GMP) activate umami receptors. They occur naturally in aged cheeses, cured meats, fish sauce, soy sauce, miso, tomatoes, mushrooms, and kombu. The effect is synergistic — glutamate in the presence of IMP or GMP produces umami perception far greater than either alone. This is why dashi (kombu + bonito) is so powerfully savory, and why parmesan on pasta works so well.</p>
+        <p>Practical application: when a dish lacks depth, consider whether it needs glutamate. A teaspoon of fish sauce or soy sauce in a braise will not read as "fishy" or "Asian" — it will read as more savory and complex.</p>
+      </div>
+    </div>
+
+    <!-- Herbs & Spices -->
+    <div class="knowledge-panel" id="s-herbs">
+      <div class="prose">
+        <h2>Herbs & Spices</h2>
+
+        <div class="callout">
+          <span class="callout-label">Core principle</span>
+          Most aromatic compounds in herbs and spices are fat-soluble terpenes and phenolics. Bloom ground spices in fat for 30–90 seconds to extract them. Water-based cooking (stocks, soups) will not efficiently extract these compounds without fat in the equation.
+        </div>
+
+        <h4>Woody (Robust) Herbs — Add Early</h4>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Herb</th><th>Flavor Profile</th><th>Best With</th><th>Notes</th></tr>
+          <tr><td><strong>Thyme</strong></td><td>Earthy, slightly floral, thymol-forward</td><td>Poultry, mushrooms, root veg, stocks</td><td>The most versatile savory herb. Add whole sprigs, remove stem.</td></tr>
+          <tr><td><strong>Rosemary</strong></td><td>Piney, camphoraceous, resinous</td><td>Lamb, pork, potatoes, focaccia</td><td>Potent. Mince fine — whole leaves have unpleasant texture.</td></tr>
+          <tr><td><strong>Sage</strong></td><td>Musky, earthy, thujone notes</td><td>Brown butter, pork, winter squash</td><td>Fry whole leaves in butter until crisp — classic garnish.</td></tr>
+          <tr><td><strong>Oregano</strong></td><td>Pungent (dried), mild (fresh)</td><td>Italian-American, Greek, Mexican</td><td>One of few herbs better dried than fresh.</td></tr>
+          <tr><td><strong>Bay Leaf</strong></td><td>Subtle, slightly floral, eucalyptol</td><td>Stocks, braises, beans</td><td>If you can't taste it, the leaves are too old. Replace annually.</td></tr>
+          <tr><td><strong>Tarragon</strong></td><td>Anise-like, sweet, estragole</td><td>Chicken, eggs, béarnaise</td><td>Key fines herbes component. Don't overdo it.</td></tr>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h4>Delicate Herbs — Add at the End</h4>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Herb</th><th>Flavor Profile</th><th>Best With</th><th>Notes</th></tr>
+          <tr><td><strong>Basil</strong></td><td>Sweet, peppery, linalool</td><td>Tomatoes, mozzarella, pasta</td><td>Tear, don't chop early — oxidizes to black immediately.</td></tr>
+          <tr><td><strong>Flat-leaf Parsley</strong></td><td>Clean, grassy, chlorophyll-forward</td><td>Everything savory as a finisher</td><td>Stems in stocks, leaves in finished dishes. Curly = garnish only.</td></tr>
+          <tr><td><strong>Cilantro</strong></td><td>Citrusy (or soapy — OR6A2 gene)</td><td>Mexican, Thai, Indian, Middle Eastern</td><td>Stems are as flavorful as leaves. Genetic sensitivity is real.</td></tr>
+          <tr><td><strong>Dill</strong></td><td>Delicate, anise-adjacent, carvone</td><td>Fish, cucumbers, yogurt, pickling</td><td>Add at the absolute end — heat destroys it in seconds.</td></tr>
+          <tr><td><strong>Chives</strong></td><td>Mild onion, fresh</td><td>Eggs, potatoes, cold sauces</td><td>Snip with scissors over the finished dish. Never cook.</td></tr>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h4>Spice Reference — Foundation Spices</h4>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Spice</th><th>Flavor</th><th>Uses</th><th>Technique</th></tr>
+          <tr><td><strong>Cumin</strong></td><td>Warm, smoky, slightly bitter — cuminaldehyde</td><td>Chili, tacos, dal, MENA cuisine</td><td>Toast whole seeds before grinding — transformative.</td></tr>
+          <tr><td><strong>Coriander</strong></td><td>Citrusy, floral — linalool</td><td>Spice blends, alongside cumin</td><td>Tastes nothing like cilantro leaf. Toast and grind whole.</td></tr>
+          <tr><td><strong>Smoked Paprika</strong></td><td>Deeply smoky, earthy, slightly sweet</td><td>Rubs, roasted vegetables, Spanish</td><td>Pimentón de la Vera (DOP) is the real article.</td></tr>
+          <tr><td><strong>Turmeric</strong></td><td>Earthy, slightly bitter — curcumin</td><td>Indian, Southeast Asian, rice</td><td>Fat-soluble; bloom in oil. Stains everything permanently.</td></tr>
+          <tr><td><strong>Fennel Seed</strong></td><td>Anise-like, sweet, trans-anethole</td><td>Italian sausage, pork, fish</td><td>Lightly crush before using in rubs.</td></tr>
+          <tr><td><strong>Cardamom</strong></td><td>Floral, citrusy, slightly camphoric</td><td>Chai, Scandinavian baking, pilaf</td><td>Crush pods, use seeds. Black cardamom is a different spice.</td></tr>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h3>Storage</h3>
+        <p>Ground spices: 6–12 months peak, safe longer but potency fades. Whole spices: 1–3 years. The smell test is definitive — if it doesn't smell like anything, it won't taste like anything. Heat and light accelerate the loss of volatile compounds. The rack above the stove is the worst possible storage location.</p>
+      </div>
+    </div>
+
+    <!-- Baking Science -->
+    <div class="knowledge-panel" id="s-baking">
+      <div class="prose">
+        <h2>Baking Science</h2>
+        <p>Baking is applied chemistry. The margin for improvisation is narrow. Understanding what each ingredient does mechanically allows you to modify recipes intelligently rather than randomly.</p>
+
+        <h3>Flour — Gluten Development</h3>
+        <p>Glutenin and gliadin proteins in flour, when hydrated and agitated, link into gluten — an elastic, extensible network that traps gas and sets the structure of baked goods. More agitation = more cross-linking = chewier result. This is why bread dough is kneaded and muffin batter is stirred minimally.</p>
+        <p>Protein content determines gluten potential: bread flour 12–14%, AP 10–12%, pastry 8–10%, cake 7–9%. Match to the texture target. Chlorinated cake flour (often labeled as "bleached") has additional oxidized starches that produce an even finer crumb.</p>
+
+        <h3>Fat — Shortening Effect</h3>
+        <p>Fat coats flour proteins, physically preventing them from linking into gluten. "Short" (as in shortbread, shortcrust) describes the crumbly texture produced by high fat content. The more thoroughly fat is incorporated before liquid is added, the more the gluten is inhibited — which is why pie dough requires working cold fat into flour before adding water, and why overworked pie dough is tough.</p>
+        <p>Butter temperature matters: cold and firm for laminated doughs (layers of fat between layers of dough). Softened for creaming (trapping air during creaming with sugar). Melted for maximum gluten inhibition (dense, fudgy texture — brownies).</p>
+
+        <h3>Sugar — Four Functions</h3>
+        <p><strong>1. Moisture retention:</strong> Sugar is hygroscopic, attracting water from the environment. This keeps baked goods moist longer and explains why reducing sugar makes baked goods stale faster.</p>
+        <p><strong>2. Gluten inhibition:</strong> Sugar competes with flour for water, reducing gluten development. High-sugar doughs are tender.</p>
+        <p><strong>3. Maillard browning and caramelization:</strong> Sugar participates in the Maillard reaction with amino acids (browning) and caramelizes independently above 320°F. Most baked good color comes from sugar.</p>
+        <p><strong>4. Aeration in creaming:</strong> Sugar crystals, beaten into softened butter, create microscopic air pockets. These expand during baking, contributing to rise.</p>
+
+        <h3>Leavening</h3>
+        <p><strong>Baking soda (NaHCO₃):</strong> Reacts with acid (buttermilk, yogurt, brown sugar, honey, cocoa, vinegar) to produce CO₂. Reaction begins on contact. Get it into the oven quickly. Also promotes browning by neutralizing acid, raising the pH toward the Maillard-optimal range.</p>
+        <p><strong>Baking powder:</strong> Baking soda pre-combined with a dry acid. Most modern formulations are double-acting — first reaction on hydration, second reaction on heat above 140°F. This gives a wider window between mixing and baking.</p>
+        <p><strong>Why both:</strong> When a recipe has sufficient acid to activate baking soda, additional baking powder handles the balance of leavening. Excess soda (unreacted by acid) produces a metallic, soapy flavor.</p>
+
+        <h3>Eggs in Baking</h3>
+        <p><strong>Whole eggs:</strong> Structure (protein sets in heat), richness (yolk fat and lecithin), emulsification (lecithin keeps fat and water mixed), lift (trapped air expands in oven).</p>
+        <p><strong>Yolks only:</strong> Richness, tenderness, color. The lecithin emulsifies fat into the batter. Extra yolks = richer, more tender crumb — custards, brioche, dacquoise.</p>
+        <p><strong>Whites only, beaten:</strong> Air cells trapped in protein foam provide lift without fat. Angel food cake, soufflé, meringue. Folding beaten whites requires a light hand — over-folding deflates the foam.</p>
+
+        <hr class="rule rule-brass">
+
+        <h2>Baker's Percentages</h2>
+        <p>Baker's percentage expresses every ingredient as a percentage of total flour weight, with flour always set at 100%. This makes scaling trivial, allows direct comparison between formulas, and immediately communicates the character of a dough — hydration, enrichment, sweetness — at a glance. A 70% hydration dough is wetter than a 60% regardless of batch size. A 15% fat dough is richer than a 5% regardless of yield.</p>
+        <p><strong>Reading a formula:</strong> If a bread formula calls for 1000g flour, 700g water, 20g salt, and 10g instant yeast, the baker's percentages are: flour 100%, water 70%, salt 2%, yeast 1%. The numbers are always relative to flour, not to total dough weight.</p>
+        <p><strong>Scaling:</strong> To make any quantity, multiply the desired flour weight by each percentage. To produce 2kg of dough at the above formula: flour weight ≈ 1,136g (because total dough = flour × (1 + 0.70 + 0.02 + 0.01) = flour × 1.73; 2000 ÷ 1.73 ≈ 1,156g flour), then apply percentages to that flour weight.</p>
+
+        <h3>Bread Formulas</h3>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Bread Type</th><th>Hydration</th><th>Fat</th><th>Sugar</th><th>Salt</th><th>Yeast (instant)</th><th>Character</th></tr>
+          <tr><td><strong>Lean country loaf</strong></td><td>72–78%</td><td>0%</td><td>0%</td><td>2%</td><td>0.3–0.5%</td><td>Open crumb, chewy crust. Long, cold ferment preferred.</td></tr>
+          <tr><td><strong>Baguette</strong></td><td>68–72%</td><td>0%</td><td>0–1%</td><td>2%</td><td>0.3–0.5%</td><td>Classic French lean dough. Crisp crust, irregular crumb.</td></tr>
+          <tr><td><strong>Ciabatta</strong></td><td>80–85%</td><td>3–5% (olive oil)</td><td>0%</td><td>2%</td><td>0.5%</td><td>Very wet dough; large, irregular holes. Handle minimally.</td></tr>
+          <tr><td><strong>Focaccia</strong></td><td>75–80%</td><td>10–15% (olive oil)</td><td>0–2%</td><td>2%</td><td>0.5–1%</td><td>High oil produces open, airy crumb with crisp, oily base.</td></tr>
+          <tr><td><strong>Pizza (Neapolitan)</strong></td><td>60–65%</td><td>0–2%</td><td>0–1%</td><td>2–2.5%</td><td>0.1–0.3%</td><td>Stiff dough; long cold ferment (24–72hr) for flavor.</td></tr>
+          <tr><td><strong>Sandwich loaf</strong></td><td>60–65%</td><td>4–8% (butter)</td><td>4–8%</td><td>2%</td><td>1%</td><td>Enriched; soft crumb and crust. Milk replaces some water.</td></tr>
+          <tr><td><strong>Brioche (classic)</strong></td><td>55–60%</td><td>50–75% (butter)</td><td>10–15%</td><td>1.5–2%</td><td>1–1.5%</td><td>Highly enriched. Butter added cold in small pieces after initial dough develops. Refrigerate overnight.</td></tr>
+          <tr><td><strong>Challah</strong></td><td>55–60%</td><td>15–20% (oil)</td><td>10–15%</td><td>2%</td><td>1.5%</td><td>Egg-enriched, oil-based. Glossy braided loaf. Slightly sweet.</td></tr>
+          <tr><td><strong>Sourdough (country)</strong></td><td>72–78%</td><td>0%</td><td>0%</td><td>2%</td><td>—</td><td>Levain replaces commercial yeast: typically 15–20% of flour weight. Long ferment; flavor from fermentation acids.</td></tr>
+          <tr><td><strong>Rye (50%)</strong></td><td>70–75%</td><td>0%</td><td>0–5%</td><td>2%</td><td>0.5%</td><td>50% rye, 50% bread flour. Denser crumb; rye lacks gluten-forming proteins. Sourdough culture preferred.</td></tr>
+          <tr><td><strong>Bagel</strong></td><td>55–58%</td><td>0–2%</td><td>2–4% (malt syrup)</td><td>2%</td><td>0.5%</td><td>Stiff, low-hydration dough. Boiled before baking; chewy and dense by design.</td></tr>
+          <tr><td><strong>English muffin</strong></td><td>70–75%</td><td>3–5%</td><td>2–3%</td><td>2%</td><td>1%</td><td>Wet dough cooked on a griddle. High hydration produces the nooks and crannies.</td></tr>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h3>Quick Breads &amp; Pastry</h3>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Item</th><th>Flour</th><th>Fat</th><th>Sugar</th><th>Egg</th><th>Liquid</th><th>Leavening</th><th>Notes</th></tr>
+          <tr><td><strong>Muffins</strong></td><td>100%</td><td>30–40%</td><td>50–75%</td><td>25–35%</td><td>75–100%</td><td>3–4% BP</td><td>Muffin method: dry + wet mixed minimally. Lumpy is correct.</td></tr>
+          <tr><td><strong>Scones</strong></td><td>100%</td><td>30–40% (cold butter)</td><td>15–25%</td><td>15–20%</td><td>30–40% (cream)</td><td>3–4% BP</td><td>Work fat in coarsely; do not overwork. Rest 15 min before baking.</td></tr>
+          <tr><td><strong>Biscuits</strong></td><td>100%</td><td>35–45% (cold fat)</td><td>0–5%</td><td>0%</td><td>55–65% (buttermilk)</td><td>3% BP + 0.5% BS</td><td>Cake flour or low-protein AP for tenderness. Fold, don't knead.</td></tr>
+          <tr><td><strong>Pancakes</strong></td><td>100%</td><td>10–20%</td><td>5–15%</td><td>25–35%</td><td>100–120%</td><td>2–3% BP</td><td>Rest batter 5 min. First pancake calibrates heat.</td></tr>
+          <tr><td><strong>Pound cake</strong></td><td>100%</td><td>100% (butter)</td><td>100%</td><td>100%</td><td>0–20%</td><td>1–2% BP</td><td>Equal weights flour:fat:sugar:egg. Creaming method. Dense, fine crumb.</td></tr>
+          <tr><td><strong>Génoise</strong></td><td>100%</td><td>25–30% (butter)</td><td>100–110%</td><td>200%</td><td>0%</td><td>None (foaming)</td><td>Whole eggs beaten warm with sugar to ribbon stage; folded with flour then browned butter.</td></tr>
+          <tr><td><strong>Chiffon cake</strong></td><td>100%</td><td>40–50% (oil)</td><td>100%</td><td>80–100%</td><td>60–80%</td><td>2% BP</td><td>Whites beaten separately and folded. Oil ensures moisture.</td></tr>
+          <tr><td><strong>Shortcrust pastry</strong></td><td>100%</td><td>50–65% (cold butter)</td><td>0–10%</td><td>0–20%</td><td>15–25% (ice water)</td><td>None</td><td>3:2:1 (flour:fat:water) is the classic ratio. Work cold; rest 30 min before rolling.</td></tr>
+          <tr><td><strong>Pâte sucrée</strong></td><td>100%</td><td>55–65%</td><td>30–40%</td><td>20–30%</td><td>0%</td><td>None</td><td>Creamed method (not rubbed). Cookie-like texture; holds its shape cleanly.</td></tr>
+          <tr><td><strong>Pâte à choux</strong></td><td>100%</td><td>100–120%</td><td>0–5%</td><td>200–250%</td><td>175–200% (water/milk)</td><td>Steam only</td><td>High egg content creates steam leavening. Cook paste until film forms on pan before adding eggs.</td></tr>
+          <tr><td><strong>Chocolate chip cookies</strong></td><td>100%</td><td>60–70%</td><td>80–100%</td><td>20–25%</td><td>0%</td><td>0.5% BS + 0.5% BP</td><td>More brown sugar = chewier, more spread. Rest dough 24–72hr refrigerated for depth of flavor.</td></tr>
+          <tr><td><strong>Brownies (fudgy)</strong></td><td>100%</td><td>100–120% (butter + oil)</td><td>200–250%</td><td>100–120%</td><td>0%</td><td>0–0.5% BP</td><td>Melted fat method. High sugar:flour ratio. Underbake slightly — carry-over sets the center.</td></tr>
+        </table>
+      </div>
+
+      <div class="prose">
+        <hr class="rule rule-brass">
+        <h2>Custard Ratios</h2>
+        <p>Custards are egg-set dairy. The ratio of eggs to liquid determines the final texture — from barely-set pouring custard to sliceable baked custard. The protein network formed by egg coagulation is the thickening mechanism; starch is not involved except in pastry cream. This means temperature control is everything: too high and the eggs curdle, producing a grainy, weeping result. Too low and they never fully set.</p>
+        <p><strong>Whole eggs vs. yolks only:</strong> Yolks set at lower temperature (149–158°F) and produce a richer, silkier result. Whole eggs set at slightly higher temperature and produce a firmer, less unctuous texture. Most baked custards use a combination. Stirred custards and crème anglaise typically use yolks only for the smoothest texture.</p>
+        <p><strong>The danger zone:</strong> Curdled custard results from exceeding approximately 185°F. At this temperature the egg proteins contract sharply, expelling moisture and producing a grainy texture. In baked custards, a water bath (bain-marie) moderates the oven temperature at the custard's surface; in stirred custards, constant motion and attention to temperature with a thermometer are the controls.</p>
+
+        <h3>Stirred Custards (stovetop)</h3>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Custard</th><th>Eggs / Yolks per 500ml dairy</th><th>Sugar</th><th>Set temp</th><th>Character &amp; Use</th></tr>
+          <tr><td><strong>Crème anglaise</strong></td><td>6 yolks</td><td>75–90g</td><td>175–180°F</td><td>Pourable; coats a spoon. Sauce for desserts, base for ice cream and bavarian cream.</td></tr>
+          <tr><td><strong>Pastry cream (crème pâtissière)</strong></td><td>4 yolks + 40g starch</td><td>100g</td><td>Boil briefly</td><td>Starch-stabilized; can be boiled without curdling. Thick, sliceable when cold. Fills éclairs, tarts, mille-feuille.</td></tr>
+          <tr><td><strong>Diplomat cream</strong></td><td>As pastry cream</td><td>As above</td><td>—</td><td>Pastry cream lightened with whipped cream (1:1). Lighter texture; good for fruit tarts and charlottes.</td></tr>
+          <tr><td><strong>Ice cream base</strong></td><td>6–8 yolks</td><td>150–175g</td><td>175–180°F</td><td>Rich crème anglaise churned. Higher yolk count = richer, slower-melting ice cream.</td></tr>
+          <tr><td><strong>Lemon curd</strong></td><td>4 whole eggs (or 6 yolks)</td><td>200g</td><td>170–175°F</td><td>Add 120g butter off heat. Butter enriches and sets the curd firm when cold.</td></tr>
+          <tr><td><strong>Sabayon / zabaglione</strong></td><td>6 yolks (no dairy)</td><td>90g</td><td>140–150°F</td><td>Yolks beaten with sugar and Marsala (or wine) over bain-marie to ribbon. Serve immediately or fold into whipped cream.</td></tr>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h3>Baked Custards</h3>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Custard</th><th>Eggs / Yolks per 500ml dairy</th><th>Sugar</th><th>Bake</th><th>Done When</th><th>Notes</th></tr>
+          <tr><td><strong>Crème brûlée</strong></td><td>6–8 yolks (cream only)</td><td>75–90g</td><td>300–325°F, bain-marie</td><td>Set at edges, jiggles like Jell-O in center</td><td>All cream (not milk) for maximum richness. Chill completely before torching sugar.</td></tr>
+          <tr><td><strong>Crème caramel / flan</strong></td><td>3 whole eggs + 2 yolks</td><td>90g (+ caramel)</td><td>325°F, bain-marie</td><td>Firm set, slight jiggle</td><td>Whole eggs produce firmer set that unmolds cleanly. Caramel in base becomes sauce when inverted.</td></tr>
+          <tr><td><strong>Pot de crème (chocolate)</strong></td><td>5–6 yolks</td><td>60g</td><td>325°F, bain-marie</td><td>Set at edges, wobble in center</td><td>Pour hot cream over chocolate and yolks (tempered); bake gently. Rich, dense texture.</td></tr>
+          <tr><td><strong>Panna cotta</strong></td><td>No eggs — gelatin set</td><td>60–75g</td><td>None (chilled)</td><td>Barely set; trembles when moved</td><td>2.5g gelatin per 500ml cream for a delicate set; 3.5g for firmer. Bloom gelatin in cold liquid before dissolving.</td></tr>
+          <tr><td><strong>Quiche</strong></td><td>3 whole eggs</td><td>0g</td><td>325–350°F, no bain-marie</td><td>Set at edges, slight jiggle in center</td><td>Per 300ml dairy (cream or cream/milk mix). Blind-bake shell. Pre-cook any filling that releases water.</td></tr>
+          <tr><td><strong>Soufflé (savory base)</strong></td><td>4 yolks + 4 whites (beaten)</td><td>0g</td><td>375–400°F, no bain-marie</td><td>Risen, golden, slight wobble</td><td>Thick béchamel base (100g roux / 500ml milk) + yolks + whipped whites. Do not open oven first 15 min.</td></tr>
+          <tr><td><strong>Bread pudding</strong></td><td>4 whole eggs</td><td>75–100g</td><td>325–350°F, optional bain-marie</td><td>Puffed, golden, set throughout</td><td>Per 500ml dairy. Soak bread minimum 30 min; overnight preferred. See below for full ratio notes.</td></tr>
+          <tr><td><strong>Clafoutis</strong></td><td>3 whole eggs</td><td>75g</td><td>350°F, no bain-marie</td><td>Puffed and set, golden edges</td><td>Per 250ml milk + 60g flour. Thin, pancake-like batter poured over fruit. Somewhere between custard and cake.</td></tr>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h3>Bread Pudding — The Full Ratio</h3>
+        <p>Bread pudding sits at the intersection of custard and baking. The variables are the custard ratio, the bread type, the soak time, and the fat enrichment. Get the ratio right and the bread absorbs the custard fully, producing a unified, creamy-interior dish. Too little custard and it's dry; too much and it never sets.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Component</th><th>Standard</th><th>Rich</th><th>Notes</th></tr>
+          <tr><td>Bread (stale, cubed)</td><td>225g (about 6 cups)</td><td>225g</td><td>Brioche, challah, or croissant for richness. Day-old pain de mie for a cleaner result. Stale bread absorbs without disintegrating.</td></tr>
+          <tr><td>Whole eggs</td><td>4</td><td>3 whole + 3 yolks</td><td>More yolks = richer, softer set.</td></tr>
+          <tr><td>Dairy</td><td>500ml whole milk</td><td>250ml milk + 250ml cream</td><td>All cream produces an almost unbearably rich result — use judiciously.</td></tr>
+          <tr><td>Sugar</td><td>100g</td><td>75g</td><td>Reduce slightly for the richer version — the fat carries sweetness perception.</td></tr>
+          <tr><td>Vanilla / flavoring</td><td>1 tsp extract or ½ vanilla bean</td><td>1 vanilla bean</td><td>Infuse cream with bean for maximum impact.</td></tr>
+          <tr><td>Fat enrichment (optional)</td><td>—</td><td>30g melted butter drizzled over</td><td>Creates a browned, slightly crisp top layer.</td></tr>
+          <tr><td>Soak time</td><td>30 min minimum</td><td>Overnight, refrigerated</td><td>Overnight soak produces a more unified texture with no dry pockets.</td></tr>
+          <tr><td>Bake</td><td>325–350°F, 40–50 min</td><td>325°F, bain-marie, 50–60 min</td><td>Bain-marie prevents the bottom from overcooking before the center sets.</td></tr>
+          <tr><td>Done</td><td>Puffed, golden, skewer comes clean</td><td>Slight jiggle in center</td><td>The rich version sets as it cools; pull slightly early.</td></tr>
+        </table>
+      </div>
+
+      <div class="callout">
+        <span class="callout-label">Variations</span>
+        <p style="margin-bottom:0.4rem;"><strong>Savory bread pudding (strata):</strong> Omit sugar. Add 150g grated cheese (Gruyère, Comté), cooked aromatics, and herbs. Same ratio otherwise. Bake uncovered for a golden, gratinéed top.</p>
+        <p style="margin-bottom:0.4rem;"><strong>Croissant bread pudding:</strong> Use day-old croissants torn in half. The laminated dough absorbs custard between layers, producing an extraordinarily rich result. Use the rich custard ratio; reduce soak to 20 min or the croissant structure disintegrates.</p>
+        <p style="margin-bottom:0;"><strong>Pain perdu / French toast:</strong> The same custard ratio applied to individual slices rather than a baked dish. 1 egg + 60ml dairy per 2 thick slices. Soak 20–30 seconds per side — enough to saturate without disintegrating. Cook on a buttered griddle at medium heat, 3–4 min per side.</p>
+      </div>
+
+      <div class="prose">
+        <h3>Gelatin Reference</h3>
+        <p>For set-but-not-baked applications (panna cotta, bavarian cream, chilled mousses), gelatin concentration determines texture. Sheet gelatin (silver grade, ~2.5g per sheet) and powdered gelatin are interchangeable by weight; always bloom in cold liquid first.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Gelatin per 500ml liquid</th><th>Set character</th><th>Use</th></tr>
+          <tr><td>2g (≈ 0.8 sheets)</td><td>Barely set; trembles, barely holds shape</td><td>Sauce consistency; won't unmold</td></tr>
+          <tr><td>3g (≈ 1.2 sheets)</td><td>Soft set; jiggles, unmolds with care</td><td>Delicate panna cotta, light mousse</td></tr>
+          <tr><td>4–5g (≈ 1.6–2 sheets)</td><td>Firm set; holds shape cleanly</td><td>Standard panna cotta, bavarian cream, chilled soufflé</td></tr>
+          <tr><td>6–8g (≈ 2.4–3.2 sheets)</td><td>Stiff; sliceable</td><td>Terrine, aspic, mirror glaze</td></tr>
+          <tr><td>10g+ (≈ 4+ sheets)</td><td>Rubbery</td><td>Avoid except for structural applications</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Proteins -->
+    <div class="knowledge-panel" id="s-proteins">
+      <div class="prose">
+        <h2>Protein Science</h2>
+
+        <h3>Denaturation & Coagulation</h3>
+        <p>Protein molecules are chains of amino acids folded into specific three-dimensional shapes by hydrogen bonds, disulfide bridges, and hydrophobic interactions. Heat disrupts these bonds, unfolding the chain (denaturation). Unfolded chains then bond to adjacent unfolded chains (coagulation), forming a solid network.</p>
+        <p>The tighter this network, the more moisture is expelled and the tougher the result. Gentle heat = loose network = tender, moist protein. Aggressive heat = tight network = tough, dry protein. This is the entire story of protein cookery, stated simply.</p>
+
+        <h3>Collagen → Gelatin</h3>
+        <p>Collagen is the most abundant structural protein in connective tissue. It has an extremely stable triple-helix structure that requires sustained heat above 160°F to break apart. The hydrolysis products (gelatin and gelatin precursors) are what give braising liquid its body, its lip-coating quality, and its behavior when cooled (it gels).</p>
+        <p>This conversion is time-dependent, not just temperature-dependent. At 180°F in braising liquid, complete conversion of a tough cut's collagen takes 3–6 hours depending on the animal's age, the cut, and the proportion of connective tissue. "It'll be done in two hours" is an assertion about the clock, not the collagen.</p>
+
+        <h3>The Maillard Reaction</h3>
+        <p>Named for Louis-Camille Maillard (1912), this is a complex cascade of reactions between reducing sugars and free amino acids under heat. It begins above approximately 280°F (140°C) at normal atmospheric pressure (lower in acidic environments). The reaction produces hundreds of flavor and aroma compounds — pyrazines, furans, aldehydes — and the brown color associated with seared meat, toast, roasted coffee, and baked bread.</p>
+        <p>Water is the enemy of Maillard: the reaction occurs readily only when surface moisture is gone. This is why wet surfaces steam before they brown, and why drying the surface of meat dramatically improves searing.</p>
+
+        <h3>Brining & Osmosis</h3>
+        <p>A wet brine (water + 3–6% salt by weight) causes osmosis: water moves from higher concentration (the meat) to lower (the brine), initially drawing moisture out. Then, as salt diffuses into the meat, it begins to denature surface proteins and the osmotic gradient reverses — the meat absorbs brine. Net result: the meat ends up more hydrated than it started, and the salt dissolved into the muscle fibers seasons from the interior and also changes the protein structure slightly, increasing water-holding capacity during cooking.</p>
+        <p>A dry brine (salt applied directly to the surface, refrigerated uncovered 1–3 days) draws surface moisture out, which then dissolves the salt, which then gets reabsorbed. The uncovered refrigeration simultaneously dries the exterior — giving you a seasoned interior and a dry surface ready for aggressive searing.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: CHARCUTERIE & CURING
+══════════════════════════════════════════════ -->
+<section id="section-charcuterie" class="section">
+  <div class="section-hero">
+    <div class="section-hero-inner">
+      <span class="section-label">Charcuterie & Curing</span>
+      <h1>The long game.</h1>
+      <p>Dry curing, fermentation, emulsified sausages, and the science of preservation — for serious projects that reward patience.</p>
+    </div>
+  </div>
+
+  <div class="knowledge-nav">
+    <div class="knowledge-nav-inner">
+      <button class="know-tab active" data-panel="c-principles">Principles</button>
+      <button class="know-tab" data-panel="c-cures">Dry Curing</button>
+      <button class="know-tab" data-panel="c-sausage">Sausages</button>
+      <button class="know-tab" data-panel="c-calculator">Cure Calculator</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Principles -->
+    <div class="knowledge-panel active" id="c-principles">
+      <div class="prose">
+        <h2>Preservation Science</h2>
+        <p>Charcuterie is applied microbiology. Every technique — curing, fermentation, smoking, drying — manipulates one or more conditions that prevent spoilage and pathogen growth: water activity (Aw), pH, salt concentration, temperature, oxygen availability. Understanding which levers you're pulling determines safety and outcome.</p>
+
+        <h3>Water Activity (Aw)</h3>
+        <p>Aw measures the amount of free (unbound) water available for microbial activity, on a scale of 0 to 1. Pure water = 1.0. Most bacteria require Aw ≥ 0.91 to grow; molds can grow at Aw as low as 0.70. Salt and sugar bind free water, lowering Aw. Drying removes it.</p>
+        <p>A fully dried bresaola or cured ham at Aw 0.87 is shelf-stable without refrigeration because most pathogens cannot replicate at this water activity. Achieving this requires both adequate salt concentration and sufficient drying time.</p>
+
+        <h3>Nitrates & Nitrites</h3>
+        <p>Sodium nitrite (NaNO₂) is the active curing agent in pink curing salt. It inhibits Clostridium botulinum, provides the characteristic pink color (by forming nitrosomyoglobin), and contributes to cured flavor through complex reactions with myoglobin and fatty acids.</p>
+        <p>Sodium nitrate (NaNO₃) is used in long-cured products (whole muscles, dry-fermented sausages). Bacteria and natural enzymes in the meat convert nitrate to nitrite slowly over the cure period — providing a sustained-release nitrite source for multi-week or multi-month cures.</p>
+
+        <div class="callout red">
+          <span class="callout-label">Safety critical</span>
+          Nitrite dosing is precise. Prague Powder #1 (curing salt #1) is 6.25% sodium nitrite in 93.75% salt. The standard application rate is 0.25% of total meat weight for equilibrium curing. Over-dosing produces nitrite toxicity; under-dosing creates botulism risk. Use the calculator below and a precision scale.
+        </div>
+
+        <h3>Equilibrium Curing</h3>
+        <p>The preferred method for whole-muscle cures. Salt (and cure) is applied at a precise percentage of the meat's weight, vacuum-sealed, and refrigerated. The salt migrates into the meat until equilibrium is reached — at which point the meat cannot absorb more salt. It is essentially impossible to over-salt with this method. Cure time is approximately 1 day per 10mm of thickness, plus 1–2 additional days.</p>
+        <p>This replaced the older excess-salt method, which required desalting and produced inconsistent results.</p>
+      </div>
+    </div>
+
+    <!-- Dry Curing -->
+    <div class="knowledge-panel" id="c-cures">
+      <div class="prose">
+        <h2>Dry Curing — Whole Muscle</h2>
+
+        <h3>Bresaola</h3>
+        <p>Air-dried, cured beef eye of round — the Italian answer to prosciutto, but leaner and from the round rather than the leg. The cure uses both nitrate (for long-term protection during the multi-week drying) and salt, with wine and aromatics penetrating during the cure phase.</p>
+      </div>
+
+      <div class="process-timeline">
+        <div class="timeline-step">
+          <h5>1. Trim & Weigh</h5>
+          <p>Remove all external fat and silver skin from the eye of round. Weigh precisely — all cure percentages are based on this weight.</p>
+        </div>
+        <div class="timeline-step">
+          <h5>2. Cure Mix</h5>
+          <p>2.75% salt, 0.25% Prague Powder #2, 0.25% sugar (by meat weight). Add spices: black pepper, juniper, bay, thyme — 0.5–1% total spice weight. Rub evenly over entire surface.</p>
+        </div>
+        <div class="timeline-step">
+          <h5>3. Equilibrium Cure</h5>
+          <p>Vacuum seal or press tightly in a bag. Refrigerate at 38–40°F. Turn daily. Cure 7–10 days for a 1.5–2 lb muscle — roughly 1 day per 1cm of thickness.</p>
+        </div>
+        <div class="timeline-step">
+          <h5>4. Rinse & Dry</h5>
+          <p>Rinse off the cure. Pat completely dry. Optionally, wrap in muslin for a cleaner exterior. Tie with butcher's twine at 1-inch intervals.</p>
+        </div>
+        <div class="timeline-step">
+          <h5>5. Hang & Dry</h5>
+          <p>50–60°F, 70–80% relative humidity, good air circulation. A wine fridge with a small container of water works well. Dry until the bresaola has lost 30–40% of its original weight — typically 4–6 weeks. Check weekly and watch for case hardening (hard exterior preventing interior drying).</p>
+        </div>
+        <div class="timeline-step">
+          <h5>6. Done</h5>
+          <p>Slice paper-thin. Serve with arugula, shaved Parmigiano, lemon, and good olive oil. Vacuum-seal and refrigerate remaining portions — it will hold for several weeks.</p>
+        </div>
+      </div>
+
+      <div class="prose">
+        <h3>Duck Prosciutto</h3>
+        <p>A faster project than bresaola — duck breasts cure and dry in 2–3 weeks total. Score the fat cap, rub with salt at 3% of weight, add black pepper and thyme, cure 24–48 hours under weight in the refrigerator. Rinse, wrap in cheesecloth, hang at 55°F / 70% RH for 1–2 weeks until firm but slightly yielding. No nitrates required for this short a cure at safe temperatures. Slice thin — the fat cap should be translucent.</p>
+
+        <h3>Guanciale</h3>
+        <p>Cured pork jowl — the authentic base for amatriciana and carbonara. The jowl has a higher proportion of fat to muscle than pancetta and a more complex, slightly funky flavor from the cheek muscles. Cure at 3% salt + 0.25% Prague Powder #1 + 0.5% black pepper for 7–10 days. Hang at 60°F / 70% RH for 3–4 weeks. The fat should be firm and ivory-white when sliced.</p>
+      </div>
+    </div>
+
+    <!-- Sausages -->
+    <div class="knowledge-panel" id="c-sausage">
+      <div class="prose">
+        <h2>Sausage Making</h2>
+
+        <h3>The Emulsified vs. Coarse-Ground Distinction</h3>
+        <p>Coarse-ground sausages (Italian, breakfast, bratwurst) are meat and fat ground together with seasonings. The fat is mechanically dispersed but not emulsified — it will render out if the sausage is overcooked. These are simple and forgiving.</p>
+        <p>Emulsified sausages (frankfurter, bologna, mortadella, weisswurst) achieve a stable emulsion of fat, protein, and water through high-speed grinding in a temperature-controlled environment. The myosin proteins, when extracted by salt and mechanical action, coat fat droplets and bind them into the protein matrix. This is why hot dogs don't ooze fat. Temperature control during grinding is critical — if the fat gets above 40°F during grinding, the emulsion breaks and you get grainy, greasy sausage.</p>
+
+        <h3>The Fat Ratio</h3>
+        <p>Fat is not optional in sausage — it is structural and flavor-critical. The minimum for a palatable sausage is 20% fat by weight; 25–30% is the sweet spot for most styles. Below 20%, the sausage is dry, dense, and lacks the mouthfeel that makes it interesting. Most commercial pork trim runs 70/30 lean/fat — one part pork trim to one part lean pork shoulder achieves approximately 25–30% total fat.</p>
+
+        <h3>Salt & Myosin Extraction</h3>
+        <p>Salt at 1.5–2% of meat weight solubilizes myosin, the motor protein in muscle. Extracted myosin forms a sticky, tacky paste that binds the sausage. Without adequate salt and mixing, the sausage crumbles when sliced. Mix until the forcemeat develops a tacky, almost rubbery texture — this is extracted myosin at work. Properly mixed sausage sticks to an inverted bowl.</p>
+
+        <h3>A Basic Approach — Italian Sausage</h3>
+      </div>
+
+      <div class="callout">
+        <span class="callout-label">Base Formula (per kg of meat)</span>
+        <p>800g pork shoulder / 200g fatback or pork belly (or 1kg 70/30 trim)</p>
+        <p>18g kosher salt (1.8%) · 2.5g black pepper · 4g fennel seed · 2g garlic powder · 1g red pepper flakes · Optional: 2g sugar, 1g anise seed</p>
+        <p>Keep everything below 38°F throughout. Grind once through a 3/8" plate; mix until tacky; stuff into 32–35mm natural hog casings; twist into 5–6" links. Cook to 155°F internal.</p>
+      </div>
+
+      <div class="prose">
+        <h3>Temperature Discipline</h3>
+        <p>The most common failure mode in sausage making is fat smear — warm fat that gets smeared rather than cut during grinding, producing a greasy, poorly textured result. Keep the meat and fat well below 40°F at every stage. Chill the grinder parts in the freezer. Work fast. If the forcemeat starts to feel warm or greasy, stop and refrigerate for 30 minutes. No exceptions.</p>
+      </div>
+    </div>
+
+    <!-- Calculator -->
+    <div class="knowledge-panel" id="c-calculator">
+      <div class="prose">
+        <h2>Cure Calculator</h2>
+        <p>Calculate precise cure amounts for equilibrium curing. All percentages are by meat weight. Prague Powder #1 is for short cures (under 2 weeks); Prague Powder #2 for long-cured products (over 2 weeks / fermented).</p>
+      </div>
+
+      <div class="cure-calc">
+        <h4>Equilibrium Cure Calculator</h4>
+        <div class="calc-row">
+          <div class="calc-field">
+            <label>Meat Weight</label>
+            <input type="number" id="cc-weight" placeholder="1000" min="100">
+          </div>
+          <div class="calc-field">
+            <label>Unit</label>
+            <select id="cc-unit">
+              <option value="g">grams</option>
+              <option value="lb">pounds</option>
+            </select>
+          </div>
+          <div class="calc-field">
+            <label>Cure Type</label>
+            <select id="cc-type">
+              <option value="pp1">Prague Powder #1</option>
+              <option value="pp2">Prague Powder #2</option>
+            </select>
+          </div>
+          <div class="calc-field">
+            <label>Salt %</label>
+            <input type="number" id="cc-salt-pct" value="2.75" step="0.25" min="1.5" max="4">
+          </div>
+          <button class="btn" onclick="calcCure()" style="align-self: flex-end;">Calculate</button>
+        </div>
+        <div class="calc-result" id="cure-result"></div>
+      </div>
+
+      <div class="cure-calc" style="margin-top:1.5rem;">
+        <h4>Drying Time Estimator</h4>
+        <div class="calc-row">
+          <div class="calc-field">
+            <label>Muscle Thickness (mm)</label>
+            <input type="number" id="dt-thickness" placeholder="60" min="10">
+          </div>
+          <div class="calc-field">
+            <label>Product Type</label>
+            <select id="dt-type">
+              <option value="whole">Whole muscle (bresaola, coppa)</option>
+              <option value="belly">Belly / flat (pancetta, bacon)</option>
+              <option value="duck">Duck breast</option>
+            </select>
+          </div>
+          <button class="btn" onclick="calcDrying()" style="align-self:flex-end;">Estimate</button>
+        </div>
+        <div class="calc-result" id="dry-result"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: REFERENCE
+══════════════════════════════════════════════ -->
+<section id="section-reference" class="section">
+  <div class="section-hero">
+    <div class="section-hero-inner">
+      <span class="section-label">Quick Reference</span>
+      <h1>At a glance.</h1>
+      <p>Conversions, substitutions, ratios, and the numbers you reach for mid-cook.</p>
+    </div>
+  </div>
+
+  <div class="knowledge-nav">
+    <div class="knowledge-nav-inner">
+      <button class="know-tab active" data-panel="r-measures">Weights & Measures</button>
+      <button class="know-tab" data-panel="r-ratios">Key Ratios</button>
+      <button class="know-tab" data-panel="r-subs">Substitutions</button>
+      <button class="know-tab" data-panel="r-equipment">Equipment</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <div class="knowledge-panel active" id="r-measures">
+      <div class="prose"><h2>Weights & Measures</h2></div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Volume</th><th>Imperial</th><th>Metric</th></tr>
+          <tr><td>1 tsp</td><td>1/6 fl oz</td><td>5 ml</td></tr>
+          <tr><td>1 tbsp</td><td>3 tsp / ½ fl oz</td><td>15 ml</td></tr>
+          <tr><td>¼ cup</td><td>4 tbsp / 2 fl oz</td><td>60 ml</td></tr>
+          <tr><td>½ cup</td><td>8 tbsp / 4 fl oz</td><td>120 ml</td></tr>
+          <tr><td>1 cup</td><td>16 tbsp / 8 fl oz</td><td>240 ml</td></tr>
+          <tr><td>1 pint</td><td>2 cups / 16 fl oz</td><td>475 ml</td></tr>
+          <tr><td>1 quart</td><td>4 cups / 32 fl oz</td><td>950 ml</td></tr>
+          <tr><td>1 gallon</td><td>4 quarts / 128 fl oz</td><td>3.8 L</td></tr>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Temperature</th><th>°F</th><th>°C</th></tr>
+          <tr><td>Water freezes</td><td>32°F</td><td>0°C</td></tr>
+          <tr><td>Poaching range</td><td>160–180°F</td><td>71–82°C</td></tr>
+          <tr><td>Simmer</td><td>180–190°F</td><td>82–88°C</td></tr>
+          <tr><td>Full boil</td><td>212°F</td><td>100°C</td></tr>
+          <tr><td>Maillard starts</td><td>~280°F</td><td>~140°C</td></tr>
+          <tr><td>Sugar caramelizes</td><td>320–356°F</td><td>160–180°C</td></tr>
+          <tr><td>Deep fry range</td><td>325–375°F</td><td>163–190°C</td></tr>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Common Weights</th><th>Imperial</th><th>Metric</th></tr>
+          <tr><td>1 oz</td><td>—</td><td>28g</td></tr>
+          <tr><td>¼ lb</td><td>4 oz</td><td>113g</td></tr>
+          <tr><td>½ lb</td><td>8 oz</td><td>227g</td></tr>
+          <tr><td>1 lb</td><td>16 oz</td><td>454g</td></tr>
+          <tr><td>1 kg</td><td>2.2 lb / 35 oz</td><td>1000g</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="knowledge-panel" id="r-ratios">
+      <div class="prose">
+        <h2>Key Ratios</h2>
+        <p>These ratios are the underlying structure of dozens of dishes. Internalize them and you can cook without a recipe.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Application</th><th>Ratio</th><th>Notes</th></tr>
+          <tr><td><strong>Beurre blanc</strong></td><td>3:1:1 (butter:wine:shallot reduction)</td><td>Finish cold butter off heat in 1 tbsp pieces</td></tr>
+          <tr><td><strong>Vinaigrette</strong></td><td>3:1 (oil:acid)</td><td>Adjust 2:1 for robust oils, 4:1 for sharp acids</td></tr>
+          <tr><td><strong>Brine (wet)</strong></td><td>5–6% salt by water weight</td><td>50–60g kosher salt per liter of water</td></tr>
+          <tr><td><strong>Dry brine</strong></td><td>1.5–2% salt by meat weight</td><td>Apply uncovered, refrigerate 1–3 days</td></tr>
+          <tr><td><strong>Basic roux</strong></td><td>1:1 (butter:flour by weight)</td><td>For béchamel and velouté</td></tr>
+          <tr><td><strong>Béchamel</strong></td><td>1L milk : 70g roux</td><td>Medium body; adjust for thicker/thinner</td></tr>
+          <tr><td><strong>Pasta (dried)</strong></td><td>100g per serving</td><td>4L water + 40g salt per 400g pasta</td></tr>
+          <tr><td><strong>Rice (absorption)</strong></td><td>1:1.5 (rice:water)</td><td>Basmati, jasmine. Short grain: 1:1.25</td></tr>
+          <tr><td><strong>Stock</strong></td><td>1:2–3 (bones:water by weight)</td><td>Skim early; never boil</td></tr>
+          <tr><td><strong>Pie crust</strong></td><td>3:2:1 (flour:fat:water, by weight)</td><td>Cold fat, cold water, minimal working</td></tr>
+          <tr><td><strong>Bread (basic)</strong></td><td>65–75% hydration by flour weight</td><td>2% salt, 1% yeast (instant)</td></tr>
+          <tr><td><strong>Custard (baked)</strong></td><td>1 egg : ½ cup dairy</td><td>Quiche: 3 eggs + 1.5 cups cream per 9" shell</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="knowledge-panel" id="r-subs">
+      <div class="prose"><h2>Substitutions</h2></div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>If you need</th><th>Use instead</th><th>Notes</th></tr>
+          <tr><td>Buttermilk (1 cup)</td><td>1 cup milk + 1 tbsp lemon juice or white vinegar</td><td>Let stand 5 min to curdle</td></tr>
+          <tr><td>Cake flour (1 cup)</td><td>¾ cup + 2 tbsp AP + 2 tbsp cornstarch</td><td>Sift together</td></tr>
+          <tr><td>Bread flour (1 cup)</td><td>1 cup AP + 1 tsp vital wheat gluten</td><td>Approximate</td></tr>
+          <tr><td>Crème fraîche</td><td>Sour cream (for cooking) or Greek yogurt</td><td>Sour cream curdles at high heat; add at end</td></tr>
+          <tr><td>Heavy cream (cooking)</td><td>Half-and-half + butter (1:1 mix)</td><td>Won't whip</td></tr>
+          <tr><td>Sherry vinegar</td><td>Aged red wine vinegar (approximate)</td><td>Sherry has nuttier, more complex note</td></tr>
+          <tr><td>Fish sauce</td><td>Soy sauce + small amount of anchovy paste</td><td>Different salt content — adjust</td></tr>
+          <tr><td>Fresh herbs (1 tbsp)</td><td>1 tsp dried</td><td>Woody herbs only; not basil, cilantro, dill</td></tr>
+          <tr><td>Tapioca starch</td><td>Arrowroot or cornstarch (equal weight)</td><td>Arrowroot preferred for acid sauces</td></tr>
+          <tr><td>Dry white wine (cooking)</td><td>Dry vermouth (reduce quantity 20%)</td><td>More aromatic; works well in most applications</td></tr>
+          <tr><td>Gelatin (1 sheet)</td><td>¼ tsp powdered gelatin</td><td>Bloom powdered in cold water first</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="knowledge-panel" id="r-equipment">
+      <div class="prose">
+        <h2>Equipment Notes</h2>
+
+        <h3>Breville Smart Oven Air BOV900BSS</h3>
+        <p><strong>Conversion from conventional:</strong> Temperature −25°F, time −20–25%. Preheat 8–10 minutes. The convection fan runs aggressively — check at 80% of recipe time the first time you make anything new.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Function</th><th>Best For</th><th>Notes</th></tr>
+          <tr><td>Bake</td><td>Cakes, custards, casseroles</td><td>Middle rack. Bottom element dominant.</td></tr>
+          <tr><td>Roast</td><td>Whole chicken, pork, fish</td><td>Use convection for better browning.</td></tr>
+          <tr><td>Convection Bake</td><td>Cookies, roasted vegetables</td><td>Drop extra 10°F from the −25°F rule.</td></tr>
+          <tr><td>Air Fry</td><td>Wings, frites, anything crispy</td><td>Single layer only. Shake/flip at midpoint.</td></tr>
+          <tr><td>Broil</td><td>Gratins, cheese, charring</td><td>Top rack. Watch constantly. Door cracked.</td></tr>
+          <tr><td>Warm / Dehydrate</td><td>Proofing dough, jerky</td><td>140°F Warm is ideal for bread proofing.</td></tr>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Protein</th><th>Function</th><th>Temp</th><th>Time</th><th>Done When</th></tr>
+          <tr><td>Chicken breast (6–8 oz)</td><td>Bake</td><td>375°F</td><td>25–30 min</td><td>160°F internal</td></tr>
+          <tr><td>Chicken thighs (bone-in)</td><td>Roast</td><td>400°F</td><td>35–40 min</td><td>175°F + deep golden skin</td></tr>
+          <tr><td>Salmon (6 oz fillet)</td><td>Bake</td><td>375°F</td><td>12–15 min</td><td>115–125°F for silky; 135°F flaked</td></tr>
+          <tr><td>Pork chops (1")</td><td>Bake</td><td>400°F</td><td>15–18 min</td><td>145°F internal; rest 3 min</td></tr>
+          <tr><td>Steak (1" ribeye)</td><td>Broil</td><td>High broil</td><td>4–5 min/side</td><td>125°F rare / 130°F medium-rare</td></tr>
+          <tr><td>Shrimp (large)</td><td>Roast</td><td>400°F</td><td>6–8 min</td><td>Pink and just curled</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── RECIPE MODAL ── -->
+<div class="modal-overlay" id="recipe-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">New Recipe</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid; gap:0.75rem; margin-bottom:1rem;">
+        <div>
+          <label style="font-size:0.78rem; font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Title</label>
+          <input type="text" id="modal-recipe-title" style="width:100%; border:1px solid var(--border-strong); padding:0.6rem 0.9rem; font-family:'Source Serif 4',serif; font-size:1rem; background:var(--warm-white); outline:none; border-radius:2px;">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div>
+            <label style="font-size:0.78rem; font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Category</label>
+            <input type="text" id="modal-recipe-cat" placeholder="e.g. Charcuterie, Stocks, Pasta…" style="width:100%; border:1px solid var(--border-strong); padding:0.6rem 0.9rem; font-family:'Source Serif 4',serif; font-size:0.9rem; background:var(--warm-white); outline:none; border-radius:2px;">
+          </div>
+          <div>
+            <label style="font-size:0.78rem; font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Source URL (optional)</label>
+            <input type="url" id="modal-recipe-url" placeholder="https://…" style="width:100%; border:1px solid var(--border-strong); padding:0.6rem 0.9rem; font-family:'Source Serif 4',serif; font-size:0.9rem; background:var(--warm-white); outline:none; border-radius:2px;">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Notes / Recipe</label>
+          <textarea id="modal-recipe-body" placeholder="Ingredients, method, notes, observations…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-brass" onclick="saveRecipe()">Save Recipe</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── NAVIGATION ──
+const sections = document.querySelectorAll('.section');
+const navBtns = document.querySelectorAll('.nav-btn');
+
+navBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    navBtns.forEach(b => b.classList.remove('active'));
+    sections.forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('section-' + btn.dataset.section).classList.add('active');
+  });
+});
+
+// ── KNOWLEDGE TABS ──
+document.querySelectorAll('.knowledge-nav').forEach(nav => {
+  nav.querySelectorAll('.know-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const panelId = tab.dataset.panel;
+      nav.querySelectorAll('.know-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      // Find parent section and toggle panels within it
+      const parentSection = tab.closest('.section');
+      parentSection.querySelectorAll('.knowledge-panel').forEach(p => p.classList.remove('active'));
+      parentSection.querySelector('#' + panelId).classList.add('active');
+    });
+  });
+});
+
+// ── ACCORDIONS ──
+document.querySelectorAll('.accordion-trigger').forEach(trigger => {
+  trigger.addEventListener('click', () => {
+    const item = trigger.closest('.accordion-item');
+    item.classList.toggle('open');
+  });
+});
+
+// ── CHAT ──
+let chatHistory = [];
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const sendBtn = document.getElementById('chat-send');
+  sendBtn.disabled = true;
+  input.value = '';
+
+  addMsg('user', msg);
+  chatHistory.push({ role: 'user', content: msg });
+
+  const thinking = addMsg('thinking', '…thinking');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a culinary reference assistant for Tim, an experienced cook with 50+ years in the kitchen and a deep understanding of cooking science. He is not a beginner. Skip foundational explanations unless the science is the point. Be precise, technical, and direct. Use professional kitchen terminology. Reference food science when relevant. Tim is currently working on projects including bresaola curing and other charcuterie. Answer concisely but completely.`,
+        messages: chatHistory
+      })
+    });
+
+    const data = await res.json();
+    thinking.remove();
+
+    const reply = data.content?.[0]?.text || 'No response.';
+    addMsg('assistant', reply);
+    chatHistory.push({ role: 'assistant', content: reply });
+  } catch (err) {
+    thinking.remove();
+    addMsg('assistant', 'Error reaching API. Check your connection.');
+  }
+
+  sendBtn.disabled = false;
+}
+
+function addMsg(type, text) {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + type;
+  div.textContent = text;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function prefillChat(text) {
+  document.getElementById('chat-input').value = text;
+  document.getElementById('chat-input').focus();
+}
+
+document.getElementById('chat-send').addEventListener('click', sendChat);
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+
+// ── RECIPES (localStorage-free, in-memory) ──
+let recipes = [];
+let editingId = null;
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// Load from storage API if available
+(async () => {
+  try {
+    const saved = await window.storage.get('sc-recipes');
+    if (saved) recipes = JSON.parse(saved.value);
+    renderRecipes();
+  } catch(e) { renderRecipes(); }
+})();
+
+async function saveToStorage() {
+  try { await window.storage.set('sc-recipes', JSON.stringify(recipes)); } catch(e) {}
+}
+
+function openNewRecipe() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'New Recipe';
+  document.getElementById('modal-recipe-title').value = '';
+  document.getElementById('modal-recipe-cat').value = '';
+  document.getElementById('modal-recipe-url').value = '';
+  document.getElementById('modal-recipe-body').value = '';
+  document.getElementById('recipe-modal').classList.add('open');
+}
+
+function openEditRecipe(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = 'Edit Recipe';
+  document.getElementById('modal-recipe-title').value = r.title;
+  document.getElementById('modal-recipe-cat').value = r.category || '';
+  document.getElementById('modal-recipe-url').value = r.url || '';
+  document.getElementById('modal-recipe-body').value = r.body || '';
+  document.getElementById('recipe-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('recipe-modal').classList.remove('open'); }
+
+async function saveRecipe() {
+  const title = document.getElementById('modal-recipe-title').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+
+  const recipe = {
+    id: editingId || genId(),
+    title,
+    category: document.getElementById('modal-recipe-cat').value.trim(),
+    url: document.getElementById('modal-recipe-url').value.trim(),
+    body: document.getElementById('modal-recipe-body').value.trim(),
+    saved: new Date().toISOString()
+  };
+
+  if (editingId) {
+    const i = recipes.findIndex(x => x.id === editingId);
+    recipes[i] = recipe;
+  } else {
+    recipes.unshift(recipe);
+  }
+
+  await saveToStorage();
+  renderRecipes();
+  closeModal();
+}
+
+async function deleteRecipe(id) {
+  if (!confirm('Delete this recipe?')) return;
+  recipes = recipes.filter(x => x.id !== id);
+  await saveToStorage();
+  renderRecipes();
+}
+
+function renderRecipes() {
+  const search = document.getElementById('recipe-search')?.value.toLowerCase() || '';
+  const activeCat = document.querySelector('.cat-pill.active')?.dataset.cat || 'all';
+  const grid = document.getElementById('recipe-grid');
+
+  let filtered = recipes.filter(r => {
+    const matchSearch = !search || r.title.toLowerCase().includes(search) || (r.body || '').toLowerCase().includes(search);
+    const matchCat = activeCat === 'all' || r.category === activeCat;
+    return matchSearch && matchCat;
+  });
+
+  // Update categories
+  const cats = [...new Set(recipes.map(r => r.category).filter(Boolean))];
+  const catBar = document.getElementById('category-bar');
+  catBar.innerHTML = '<span class="cat-pill active" data-cat="all">All</span>' +
+    cats.map(c => `<span class="cat-pill" data-cat="${c}">${c}</span>`).join('');
+
+  catBar.querySelectorAll('.cat-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      catBar.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      renderRecipes();
+    });
+  });
+
+  document.getElementById('recipe-count-label').textContent = `${recipes.length} recipe${recipes.length !== 1 ? 's' : ''} saved`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="big-icon">📖</div><p>${recipes.length === 0 ? 'No recipes yet. Add one with <strong>+ New Recipe</strong> or import a document.' : 'No recipes match your search.'}</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(r => `
+    <div class="recipe-card">
+      <div class="recipe-card-body">
+        <div class="recipe-meta">${r.category || 'Uncategorized'} · ${new Date(r.saved).toLocaleDateString()}</div>
+        <h3>${r.title}</h3>
+        ${r.url ? `<p><a href="${r.url}" target="_blank" style="color:var(--brass); font-size:0.82rem;">${new URL(r.url).hostname}</a></p>` : ''}
+        ${r.body ? `<p>${r.body}</p>` : ''}
+      </div>
+      <div class="recipe-card-actions">
+        <button onclick="openEditRecipe('${r.id}')">Edit</button>
+        ${r.url ? `<button onclick="window.open('${r.url}','_blank')">Open URL</button>` : ''}
+        <button onclick="deleteRecipe('${r.id}')" style="margin-left:auto; color:var(--accent-red);">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterRecipes() { renderRecipes(); }
+
+function exportRecipes() {
+  const blob = new Blob([JSON.stringify(recipes, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'serious-cooking-recipes.json';
+  a.click();
+}
+
+function importRecipes(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (Array.isArray(imported)) {
+        recipes = [...recipes, ...imported.filter(r => r.title && r.id)];
+        await saveToStorage();
+        renderRecipes();
+        alert(`Imported ${imported.length} recipes.`);
+      }
+    } catch { alert('Invalid JSON file.'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+async function importDocument(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+
+  const statusEl = document.getElementById('recipe-count-label');
+  const originalLabel = statusEl.textContent;
+
+  // Show a modal-style overlay message
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(26,22,18,0.6);z-index:300;display:flex;align-items:center;justify-content:center;`;
+  overlay.innerHTML = `
+    <div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;margin-bottom:0.75rem;">Reading ${file.name}</div>
+      <div id="import-status" style="font-size:0.9rem;color:var(--text-muted);font-style:italic;">Converting document…</div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const setStatus = (msg) => {
+    const el = document.getElementById('import-status');
+    if (el) el.textContent = msg;
+  };
+
+  try {
+    // Read file as base64
+    const base64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = () => res(reader.result.split(',')[1]);
+      reader.onerror = () => rej(new Error('File read failed'));
+      reader.readAsDataURL(file);
+    });
+
+    const isPDF = file.name.toLowerCase().endsWith('.pdf');
+    const mediaType = isPDF ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+    setStatus('Sending to Claude for extraction…');
+
+    // For DOCX, Claude can't read binary directly — convert to text hint
+    // For PDF, Claude handles it natively as a document
+    let messageContent;
+    if (isPDF) {
+      messageContent = [
+        {
+          type: 'document',
+          source: { type: 'base64', media_type: mediaType, data: base64 }
+        },
+        {
+          type: 'text',
+          text: `Extract all recipes from this document. Return ONLY a valid JSON array, no markdown, no explanation. Each object must have these fields:
+- "title": string (recipe name)
+- "category": string (infer from context: Beef, Chicken, Pork, Seafood, Pasta, Soups and Stews, Salads and Dressings, Breads, Appetizers, Sauces & Condiments, Sides, Cakes Cookies & Quick Breads, or other appropriate category)
+- "body": string (full recipe text including ingredients and method, preserve formatting)
+- "url": string or omit if not present
+
+If no recipes found, return [].`
+        }
+      ];
+    } else {
+      // DOCX: send as base64 document block — Claude will attempt to read it
+      messageContent = [
+        {
+          type: 'document',
+          source: { type: 'base64', media_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', data: base64 }
+        },
+        {
+          type: 'text',
+          text: `Extract all recipes from this Word document. Return ONLY a valid JSON array, no markdown, no explanation. Each object must have:
+- "title": string (recipe name)
+- "category": string (infer: Beef, Chicken, Pork, Seafood, Pasta, Soups and Stews, Salads and Dressings, Breads, Appetizers, Sauces & Condiments, Sides, Cakes Cookies & Quick Breads, or other)
+- "body": string (full recipe text, ingredients and method)
+- "url": string or omit if not present
+
+If no recipes found, return [].`
+        }
+      ];
+    }
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        system: 'You are a recipe extraction assistant. You extract recipes from documents and return structured JSON only. Never return markdown code fences. Never add explanation. Return a raw JSON array.',
+        messages: [{ role: 'user', content: messageContent }]
+      })
+    });
+
+    const data = await res.json();
+    setStatus('Parsing results…');
+
+    const text = data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '';
+    const cleaned = text.replace(/```json|```/g, '').trim();
+
+    let imported = [];
+    try {
+      imported = JSON.parse(cleaned);
+    } catch {
+      // Try to extract JSON array from within the response
+      const match = cleaned.match(/\[[\s\S]*\]/);
+      if (match) imported = JSON.parse(match[0]);
+    }
+
+    if (!Array.isArray(imported) || imported.length === 0) {
+      setStatus('No recipes found in document.');
+      setTimeout(() => overlay.remove(), 2500);
+      return;
+    }
+
+    // Normalize and add IDs
+    const now = new Date().toISOString();
+    const newRecipes = imported
+      .filter(r => r.title)
+      .map(r => ({
+        id: genId(),
+        title: r.title,
+        category: r.category || 'Imported',
+        body: r.body || '',
+        url: r.url || '',
+        saved: now
+      }));
+
+    recipes = [...newRecipes, ...recipes];
+    await saveToStorage();
+    renderRecipes();
+
+    overlay.innerHTML = `
+      <div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">✓</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;margin-bottom:0.5rem;">Imported ${newRecipes.length} recipe${newRecipes.length !== 1 ? 's' : ''}</div>
+        <div style="font-size:0.88rem;color:var(--text-muted);">from ${file.name}</div>
+      </div>`;
+    setTimeout(() => overlay.remove(), 2500);
+
+  } catch (err) {
+    console.error(err);
+    overlay.innerHTML = `
+      <div style="background:var(--warm-white);padding:2rem 2.5rem;border-radius:4px;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">✗</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;margin-bottom:0.5rem;">Import failed</div>
+        <div style="font-size:0.88rem;color:var(--text-muted);">${err.message}</div>
+      </div>`;
+    setTimeout(() => overlay.remove(), 3000);
+  }
+}
+
+// ── WEB SEARCH ──
+function openWebSearch() {
+  const panel = document.getElementById('web-search-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function doWebSearch() {
+  const query = document.getElementById('web-search-input').value.trim();
+  if (!query) return;
+  const results = document.getElementById('search-results');
+  results.style.display = 'block';
+  results.innerHTML = '<em style="color:var(--text-muted); font-size:0.9rem;">Searching…</em>';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        system: 'Return a JSON array of up to 5 recipe results. Each object: {title, url, description}. JSON only, no markdown.',
+        messages: [{ role: 'user', content: `Find recipes for: ${query}` }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.filter(b => b.type === 'text').map(b => b.text).join('');
+    const cleaned = text?.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    results.innerHTML = parsed.map(r => `
+      <a class="result-link" href="${r.url}" target="_blank">
+        <strong>${r.title}</strong>
+        <small>${r.description}</small>
+      </a>
+    `).join('');
+  } catch(e) {
+    results.innerHTML = '<em style="color:var(--text-muted);">Search unavailable.</em>';
+  }
+}
+
+// ── CURE CALCULATOR ──
+function calcCure() {
+  const weightRaw = parseFloat(document.getElementById('cc-weight').value);
+  const unit = document.getElementById('cc-unit').value;
+  const type = document.getElementById('cc-type').value;
+  const saltPct = parseFloat(document.getElementById('cc-salt-pct').value) / 100;
+
+  if (!weightRaw || isNaN(weightRaw)) { alert('Enter a valid weight.'); return; }
+
+  const weight = unit === 'lb' ? weightRaw * 453.59 : weightRaw;
+  const salt = (weight * saltPct).toFixed(1);
+  const cure = (weight * 0.0025).toFixed(2);
+  const sugar = (weight * 0.0025).toFixed(1);
+  const cureLabel = type === 'pp1' ? 'Prague Powder #1' : 'Prague Powder #2';
+  const cureTime = Math.round(weight / 100 / 10) + 2;
+
+  const result = document.getElementById('cure-result');
+  result.classList.add('show');
+  result.innerHTML = `
+<span class="result-label">For ${weightRaw}${unit} (${Math.round(weight)}g) of meat:</span>\n
+Salt (${(saltPct*100).toFixed(2)}%): <strong>${salt}g</strong>
+${cureLabel} (0.25%): <strong>${cure}g</strong>
+Sugar (0.25%): <strong>${sugar}g</strong>
+\n<span class="result-label">Cure time:</span> ~${cureTime} days in vacuum, refrigerated at 38–40°F
+  `;
+}
+
+function calcDrying() {
+  const thickness = parseFloat(document.getElementById('dt-thickness').value);
+  const type = document.getElementById('dt-type').value;
+
+  if (!thickness || isNaN(thickness)) { alert('Enter muscle thickness.'); return; }
+
+  let baseWeeks, humidity, temp, weightLoss;
+  if (type === 'duck') {
+    baseWeeks = '1–2';
+    humidity = '70–75%';
+    temp = '50–58°F';
+    weightLoss = '25–30%';
+  } else if (type === 'belly') {
+    baseWeeks = Math.round(thickness / 25) + '–' + (Math.round(thickness / 25) + 2);
+    humidity = '70–75%';
+    temp = '50–58°F';
+    weightLoss = '20–25%';
+  } else {
+    const base = Math.round(thickness / 15);
+    baseWeeks = base + '–' + (base + 2);
+    humidity = '70–80%';
+    temp = '50–60°F';
+    weightLoss = '30–35%';
+  }
+
+  const result = document.getElementById('dry-result');
+  result.classList.add('show');
+  result.innerHTML = `
+<span class="result-label">Estimated drying for ${thickness}mm ${type.replace('whole','whole muscle')}:</span>\n
+Drying time: <strong>${baseWeeks} weeks</strong>
+Temperature: <strong>${temp}</strong>
+Relative humidity: <strong>${humidity}</strong>
+Target weight loss: <strong>${weightLoss}</strong>\n
+<span class="result-label">Note:</span> Weigh weekly. Stop when target weight loss is reached, not when time is up.
+  `;
+}
+
+// Modal click-outside to close
+document.getElementById('recipe-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
