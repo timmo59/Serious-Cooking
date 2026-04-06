@@ -2250,17 +2250,17 @@ let editingId = null;
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
-// Load from storage API if available
+// Load from localStorage
 (async () => {
   try {
-    const saved = await window.storage.get('sc-recipes');
-    if (saved) recipes = JSON.parse(saved.value);
-    renderRecipes();
-  } catch(e) { renderRecipes(); }
+    const saved = localStorage.getItem('sc-recipes');
+    if (saved) recipes = JSON.parse(saved);
+  } catch(e) {}
+  renderRecipes();
 })();
 
 async function saveToStorage() {
-  try { await window.storage.set('sc-recipes', JSON.stringify(recipes)); } catch(e) {}
+  try { localStorage.setItem('sc-recipes', JSON.stringify(recipes)); } catch(e) {}
 }
 
 function openNewRecipe() {
