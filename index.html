@@ -1060,6 +1060,9 @@
       <input type="file" id="import-file" accept=".json" onchange="importRecipes(event)">
       <button class="btn btn-outline" onclick="openDocImport()">📄 Import .docx / .pdf</button>
       <input type="file" id="import-doc" accept=".docx,.pdf,.txt" onchange="importDocument(event)" style="display:none">
+      <button class="btn btn-outline" onclick="document.getElementById('import-bookmarks').click()">🔖 Import Bookmarks</button>
+      <input type="file" id="import-bookmarks" accept=".html,.htm" onchange="importBookmarks(event)" style="display:none">
+      <button class="btn btn-outline" onclick="openPasteLink()">🔗 Paste Link</button>
     </div>
 
     <div class="recipe-toolbar">
@@ -2816,7 +2819,254 @@ function openManageCategories() {
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
-// ── CURE CALCULATOR ──
+// ── BOOKMARK HTML IMPORTER ──
+async function importBookmarks(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+
+  const html = await file.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const anchors = [...doc.querySelectorAll('a[href]')];
+
+  // Filter to http(s) links only, dedupe by URL
+  const seen = new Set();
+  const links = anchors
+    .filter(a => /^https?:\/\//i.test(a.href))
+    .filter(a => { if (seen.has(a.href)) return false; seen.add(a.href); return true; })
+    .map(a => ({ title: a.textContent.trim() || a.href, url: a.href }));
+
+  if (!links.length) {
+    alert('No HTTP links found in that file.');
+    return;
+  }
+
+  // Get current categories for the dropdown
+  const cats = [...new Set(recipes.map(r => r.category).filter(Boolean))].sort();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'bm-overlay';
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(26,22,18,0.7);z-index:300;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;`;
+
+  function renderBmOverlay(filter = '') {
+    const filtered = filter
+      ? links.filter(l => l.title.toLowerCase().includes(filter.toLowerCase()) || l.url.toLowerCase().includes(filter.toLowerCase()))
+      : links;
+
+    overlay.innerHTML = `
+      <div style="background:var(--warm-white);width:100%;max-width:680px;border-radius:4px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.35);margin:auto;">
+        <div style="background:var(--ink);color:var(--cream);padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <span style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;">Import Bookmarks</span>
+            <span style="display:block;font-size:0.75rem;color:var(--brass);font-family:'JetBrains Mono',monospace;margin-top:0.2rem;">${links.length} links found</span>
+          </div>
+          <button onclick="document.getElementById('bm-overlay').remove()" style="background:none;border:none;color:#9b8c82;font-size:1.2rem;cursor:pointer;line-height:1;">✕</button>
+        </div>
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+          <input type="text" id="bm-search" placeholder="Filter links…" value="${filter}"
+            oninput="renderBmOverlayFromInput()"
+            style="flex:1;min-width:180px;border:1px solid var(--border-strong);padding:0.5rem 0.8rem;font-family:'Source Serif 4',serif;font-size:0.9rem;background:var(--warm-white);outline:none;border-radius:2px;">
+          <select id="bm-cat-select" style="border:1px solid var(--border-strong);padding:0.5rem 0.8rem;font-family:'Source Serif 4',serif;font-size:0.9rem;background:var(--warm-white);outline:none;border-radius:2px;">
+            <option value="">— Uncategorized —</option>
+            ${cats.map(c => `<option value="${c}">${c}</option>`).join('')}
+            <option value="__new__">+ New category…</option>
+          </select>
+          <input type="text" id="bm-cat-new" placeholder="New category name…" style="display:none;border:1px solid var(--border-strong);padding:0.5rem 0.8rem;font-family:'Source Serif 4',serif;font-size:0.9rem;background:var(--warm-white);outline:none;border-radius:2px;width:180px;">
+        </div>
+        <div style="padding:0.5rem 1.5rem;background:var(--section-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;">
+          <label style="font-size:0.82rem;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:0.4rem;">
+            <input type="checkbox" id="bm-select-all" onchange="bmToggleAll(this.checked)"> Select all (${filtered.length})
+          </label>
+          <span style="font-size:0.78rem;color:var(--text-light);font-family:'JetBrains Mono',monospace;" id="bm-selected-count">0 selected</span>
+          <button onclick="bmImportSelected()" class="btn btn-brass" style="margin-left:auto;padding:0.4rem 1rem;font-size:0.72rem;">Add Selected →</button>
+        </div>
+        <div style="max-height:50vh;overflow-y:auto;padding:0.5rem 0;" id="bm-list">
+          ${filtered.map((l, i) => `
+            <label style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.6rem 1.5rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;" onmouseover="this.style.background='var(--section-bg)'" onmouseout="this.style.background=''">
+              <input type="checkbox" class="bm-check" data-url="${l.url}" data-title="${l.title.replace(/"/g,'&quot;')}" onchange="bmUpdateCount()" style="margin-top:3px;flex-shrink:0;">
+              <div style="min-width:0;">
+                <div style="font-size:0.9rem;color:var(--ink);line-height:1.3;margin-bottom:0.15rem;">${l.title}</div>
+                <div style="font-size:0.75rem;color:var(--text-light);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.url}</div>
+              </div>
+            </label>`).join('')}
+        </div>
+      </div>`;
+
+    // Wire up category new-input toggle
+    document.getElementById('bm-cat-select').addEventListener('change', function() {
+      const ni = document.getElementById('bm-cat-new');
+      ni.style.display = this.value === '__new__' ? 'inline-block' : 'none';
+    });
+  }
+
+  window.renderBmOverlayFromInput = function() {
+    const f = document.getElementById('bm-search')?.value || '';
+    renderBmOverlay(f);
+  };
+
+  window.bmToggleAll = function(checked) {
+    document.querySelectorAll('.bm-check').forEach(cb => cb.checked = checked);
+    bmUpdateCount();
+  };
+
+  window.bmUpdateCount = function() {
+    const n = document.querySelectorAll('.bm-check:checked').length;
+    const el = document.getElementById('bm-selected-count');
+    if (el) el.textContent = `${n} selected`;
+  };
+
+  window.bmImportSelected = async function() {
+    const checked = [...document.querySelectorAll('.bm-check:checked')];
+    if (!checked.length) { alert('Select at least one link.'); return; }
+
+    const catSel = document.getElementById('bm-cat-select');
+    let category = catSel ? catSel.value : '';
+    if (category === '__new__') {
+      category = (document.getElementById('bm-cat-new')?.value || '').trim();
+    }
+
+    const now = new Date().toISOString();
+    const newRecipes = checked.map(cb => ({
+      id: genId(),
+      title: cb.dataset.title,
+      url: cb.dataset.url,
+      category,
+      body: '',
+      saved: now
+    }));
+
+    recipes = [...newRecipes, ...recipes];
+    await saveToStorage();
+    renderRecipes();
+    overlay.remove();
+    // Brief confirmation
+    const toast = document.createElement('div');
+    toast.style.cssText = `position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:var(--cream);padding:0.8rem 1.4rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:0.8rem;z-index:400;box-shadow:0 4px 20px rgba(0,0,0,0.3);`;
+    toast.textContent = `✓ ${newRecipes.length} recipe${newRecipes.length!==1?'s':''} added`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  };
+
+  renderBmOverlay();
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
+// ── PASTE A LINK ──
+function openPasteLink() {
+  const cats = [...new Set(recipes.map(r => r.category).filter(Boolean))].sort();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'paste-link-overlay';
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(26,22,18,0.65);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;`;
+  overlay.innerHTML = `
+    <div style="background:var(--warm-white);border-radius:4px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
+      <div style="background:var(--ink);color:var(--cream);padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;">Paste a Link</span>
+        <button onclick="document.getElementById('paste-link-overlay').remove()" style="background:none;border:none;color:#9b8c82;font-size:1.2rem;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <div style="padding:1.5rem;display:grid;gap:0.9rem;">
+        <div>
+          <label style="font-size:0.75rem;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Paste URL or &lt;a&gt; tag</label>
+          <textarea id="pl-input" rows="3" placeholder='https://example.com/recipe&#10;— or —&#10;&lt;a href="https://…"&gt;Recipe Title&lt;/a&gt;'
+            style="width:100%;border:1px solid var(--border-strong);padding:0.7rem 0.9rem;font-family:'JetBrains Mono',monospace;font-size:0.82rem;background:var(--warm-white);outline:none;border-radius:2px;resize:vertical;line-height:1.5;"
+            oninput="parsePasteLink()"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div>
+            <label style="font-size:0.75rem;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Title</label>
+            <input type="text" id="pl-title" placeholder="Recipe title…"
+              style="width:100%;border:1px solid var(--border-strong);padding:0.6rem 0.8rem;font-family:'Source Serif 4',serif;font-size:0.9rem;background:var(--warm-white);outline:none;border-radius:2px;">
+          </div>
+          <div>
+            <label style="font-size:0.75rem;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Category</label>
+            <select id="pl-cat-select" onchange="document.getElementById('pl-cat-new').style.display=this.value==='__new__'?'block':'none'"
+              style="width:100%;border:1px solid var(--border-strong);padding:0.6rem 0.8rem;font-family:'Source Serif 4',serif;font-size:0.9rem;background:var(--warm-white);outline:none;border-radius:2px;">
+              <option value="">— Uncategorized —</option>
+              ${cats.map(c => `<option value="${c}">${c}</option>`).join('')}
+              <option value="__new__">+ New category…</option>
+            </select>
+            <input type="text" id="pl-cat-new" placeholder="New category…"
+              style="display:none;width:100%;border:1px solid var(--border-strong);border-top:none;padding:0.5rem 0.8rem;font-family:'Source Serif 4',serif;font-size:0.9rem;background:var(--warm-white);outline:none;border-radius:0 0 2px 2px;">
+          </div>
+        </div>
+        <div id="pl-preview" style="display:none;padding:0.6rem 0.9rem;background:var(--section-bg);border:1px solid var(--border);border-radius:2px;font-size:0.82rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;word-break:break-all;"></div>
+      </div>
+      <div style="padding:1rem 1.5rem;background:var(--section-bg);border-top:1px solid var(--border);display:flex;gap:0.75rem;justify-content:flex-end;">
+        <button onclick="document.getElementById('paste-link-overlay').remove()" class="btn btn-outline">Cancel</button>
+        <button onclick="savePasteLink()" class="btn btn-brass">Save Recipe</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  setTimeout(() => document.getElementById('pl-input')?.focus(), 50);
+}
+
+window.parsePasteLink = function() {
+  const raw = document.getElementById('pl-input').value.trim();
+  const titleEl = document.getElementById('pl-title');
+  const preview = document.getElementById('pl-preview');
+  if (!raw) { preview.style.display = 'none'; return; }
+
+  let url = '', title = '';
+
+  // Try parsing as <a> tag
+  const aMatch = raw.match(/<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/i);
+  if (aMatch) {
+    url = aMatch[1];
+    title = aMatch[2].replace(/<[^>]+>/g, '').trim();
+  } else {
+    // Try bare URL
+    const urlMatch = raw.match(/https?:\/\/[^\s"'<>]+/i);
+    if (urlMatch) url = urlMatch[0];
+  }
+
+  if (url) {
+    if (!titleEl.value) titleEl.value = title || '';
+    preview.style.display = 'block';
+    preview.textContent = url;
+  } else {
+    preview.style.display = 'none';
+  }
+};
+
+window.savePasteLink = async function() {
+  const raw = document.getElementById('pl-input').value.trim();
+  const titleInput = document.getElementById('pl-title').value.trim();
+
+  let url = '', title = '';
+  const aMatch = raw.match(/<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/i);
+  if (aMatch) {
+    url = aMatch[1];
+    title = aMatch[2].replace(/<[^>]+>/g, '').trim();
+  } else {
+    const urlMatch = raw.match(/https?:\/\/[^\s"'<>]+/i);
+    if (urlMatch) url = urlMatch[0];
+  }
+
+  if (!url) { alert('No valid URL found. Paste a full URL or an <a> tag.'); return; }
+
+  const finalTitle = titleInput || title || url;
+  const catSel = document.getElementById('pl-cat-select');
+  let category = catSel.value === '__new__'
+    ? (document.getElementById('pl-cat-new')?.value.trim() || '')
+    : catSel.value;
+
+  recipes.unshift({ id: genId(), title: finalTitle, url, category, body: '', saved: new Date().toISOString() });
+  await saveToStorage();
+  renderRecipes();
+  document.getElementById('paste-link-overlay').remove();
+
+  const toast = document.createElement('div');
+  toast.style.cssText = `position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:var(--cream);padding:0.8rem 1.4rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:0.8rem;z-index:400;box-shadow:0 4px 20px rgba(0,0,0,0.3);`;
+  toast.textContent = `✓ "${finalTitle}" saved`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+};
+
+
 function calcCure() {
   const weightRaw = parseFloat(document.getElementById('cc-weight').value);
   const unit = document.getElementById('cc-unit').value;
