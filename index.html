@@ -2353,13 +2353,14 @@ function renderRecipes() {
 
   grid.innerHTML = filtered.map(r => `
     <div class="recipe-card">
-      <div class="recipe-card-body">
+      <div class="recipe-card-body" ${r.body ? `onclick="viewRecipe('${r.id}')" style="cursor:pointer;"` : ''}>
         <div class="recipe-meta">${r.category || 'Uncategorized'} · ${new Date(r.saved).toLocaleDateString()}</div>
         <h3>${r.title}</h3>
-        ${r.url ? `<p><a href="${r.url}" target="_blank" style="color:var(--brass); font-size:0.82rem;">${new URL(r.url).hostname}</a></p>` : ''}
-        ${r.body ? `<p>${r.body}</p>` : ''}
+        ${r.url ? `<p><a href="${r.url}" target="_blank" style="color:var(--brass); font-size:0.82rem;" onclick="event.stopPropagation()">${new URL(r.url).hostname}</a></p>` : ''}
+        ${r.body ? `<p style="font-size:0.85rem;color:var(--text-muted);">${r.body.slice(0,120).replace(/\n/g,' ')}…</p>` : ''}
       </div>
       <div class="recipe-card-actions">
+        ${r.body ? `<button onclick="viewRecipe('${r.id}')">View</button>` : ''}
         <button onclick="openEditRecipe('${r.id}')">Edit</button>
         ${r.url ? `<button onclick="window.open('${r.url}','_blank')">Open URL</button>` : ''}
         <button onclick="deleteRecipe('${r.id}')" style="margin-left:auto; color:var(--accent-red);">Delete</button>
@@ -2369,6 +2370,64 @@ function renderRecipes() {
 }
 
 function filterRecipes() { renderRecipes(); }
+
+function viewRecipe(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+
+  // Create or reuse view overlay
+  let overlay = document.getElementById('recipe-view-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'recipe-view-overlay';
+    overlay.style.cssText = `position:fixed;inset:0;background:rgba(26,22,18,0.75);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;`;
+    document.body.appendChild(overlay);
+  }
+
+  // Format body text — preserve line breaks, bold ALL-CAPS section headers
+  const formatted = (r.body || '')
+    .split('\n')
+    .map(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return '<br>';
+      // Detect section headers (all caps or ends with colon and short)
+      if (trimmed === trimmed.toUpperCase() && trimmed.length > 2 && trimmed.length < 60 && /[A-Z]/.test(trimmed)) {
+        return `<div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.15em;color:var(--brass);margin-top:1.2rem;margin-bottom:0.3rem;">${trimmed}</div>`;
+      }
+      if (trimmed.endsWith(':') && trimmed.length < 40) {
+        return `<div style="font-weight:600;margin-top:1rem;margin-bottom:0.2rem;">${trimmed}</div>`;
+      }
+      // Bullet-style lines
+      if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.match(/^\d+\./)) {
+        return `<div style="padding-left:1rem;margin-bottom:0.25rem;">${trimmed}</div>`;
+      }
+      return `<div style="margin-bottom:0.25rem;">${trimmed}</div>`;
+    }).join('');
+
+  overlay.innerHTML = `
+    <div style="background:var(--warm-white);width:100%;max-width:700px;border-radius:4px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.35);margin:auto;">
+      <div style="background:var(--ink);color:var(--cream);padding:1.4rem 1.8rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--brass);margin-bottom:0.4rem;">${r.category || 'Uncategorized'}</div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:600;line-height:1.2;">${r.title}</h2>
+        </div>
+        <button onclick="document.getElementById('recipe-view-overlay').remove()" style="background:none;border:none;color:#9b8c82;font-size:1.4rem;cursor:pointer;flex-shrink:0;line-height:1;">✕</button>
+      </div>
+      <div style="padding:1.8rem;font-size:0.93rem;line-height:1.65;color:var(--text-body);max-height:70vh;overflow-y:auto;">
+        ${formatted}
+      </div>
+      <div style="padding:1rem 1.8rem;background:var(--section-bg);border-top:1px solid var(--border);display:flex;gap:0.75rem;justify-content:flex-end;">
+        ${r.url ? `<a href="${r.url}" target="_blank" class="btn btn-outline" style="text-decoration:none;font-size:0.72rem;">Open Original URL</a>` : ''}
+        <button class="btn btn-outline" onclick="openEditRecipe('${r.id}'); document.getElementById('recipe-view-overlay').remove();">Edit</button>
+        <button class="btn" onclick="document.getElementById('recipe-view-overlay').remove()">Close</button>
+      </div>
+    </div>`;
+
+  // Click outside to close
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.remove();
+  }, { once: true });
+}
 
 function exportRecipes() {
   const blob = new Blob([JSON.stringify(recipes, null, 2)], {type: 'application/json'});
