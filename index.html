@@ -2558,7 +2558,7 @@
 const sections = document.querySelectorAll('.section');
 const navBtns = document.querySelectorAll('.nav-btn');
 
-function showSection(sectionId) {
+function showSection(sectionId, pushState = true) {
   const navBtns = document.querySelectorAll('.nav-btn');
   const sections = document.querySelectorAll('.section');
   navBtns.forEach(b => b.classList.remove('active'));
@@ -2568,8 +2568,21 @@ function showSection(sectionId) {
   const sec = document.getElementById('section-' + sectionId);
   if (sec) sec.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (pushState) {
+    history.pushState({ section: sectionId }, '', '#' + sectionId);
+  }
 }
 window.showSection = showSection;
+
+// Handle browser back/forward
+window.addEventListener('popstate', e => {
+  const sectionId = e.state?.section || 'consult';
+  showSection(sectionId, false);
+});
+
+// On load, respect any hash in the URL
+const initialSection = location.hash.replace('#', '') || 'consult';
+if (initialSection !== 'consult') showSection(initialSection, false);
 
 navBtns.forEach(btn => {
   btn.addEventListener('click', () => showSection(btn.dataset.section));
