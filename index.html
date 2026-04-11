@@ -981,26 +981,21 @@
   .consult-hero {
     background: var(--ink);
     border-bottom: 2px solid var(--brass);
-    padding: 0;
+    padding: 3.5rem 2rem 3rem;
   }
 
   .consult-hero-inner {
-    max-width: 1280px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 3.5rem 2rem 3rem;
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 4rem;
-    align-items: start;
   }
 
   .consult-headline {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+    font-size: clamp(2rem, 4vw, 3.2rem);
     font-weight: 900;
-    line-height: 1.08;
+    line-height: 1.1;
     color: var(--cream);
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
     letter-spacing: -0.01em;
   }
 
@@ -1012,87 +1007,53 @@
   .consult-subhead {
     font-size: 1rem;
     color: #a09488;
-    max-width: 560px;
+    max-width: 620px;
     font-weight: 300;
     line-height: 1.75;
     margin-bottom: 2rem;
   }
 
-  .consult-pillars {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .pillar {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-  }
-
-  .pillar-icon {
-    color: var(--brass);
+  .consult-subhead {
     font-size: 1rem;
-    line-height: 1;
-    margin-bottom: 0.3rem;
-  }
-
-  .pillar-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--cream);
-    font-weight: 500;
-  }
-
-  .pillar-desc {
-    font-size: 0.8rem;
-    color: #6b5d52;
+    color: #a09488;
+    max-width: 680px;
+    font-weight: 300;
+    line-height: 1.75;
+    margin-bottom: 2.5rem;
     font-style: italic;
   }
 
-  /* Principle ticker */
-  .principle-ticker {
-    background: var(--charcoal);
-    border: 1px solid rgba(184,146,74,0.25);
-    border-radius: 4px;
-    padding: 1.6rem 1.6rem 1.4rem;
-    position: relative;
-    min-height: 160px;
+  .consult-nav-prose {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: 1px solid rgba(184,146,74,0.2);
+  }
+
+  .cnp-item {
+    padding: 1.2rem 1.4rem 1.2rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 0.35rem;
   }
 
-  .ticker-label {
+  .cnp-item:nth-child(3n) {
+    padding-right: 0;
+  }
+
+  .cnp-label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--brass);
-    margin-bottom: 1rem;
   }
 
-  .ticker-text {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
-    font-style: italic;
-    color: var(--cream);
+  .cnp-text {
+    font-size: 0.85rem;
+    color: #7a6d64;
     line-height: 1.55;
-    flex: 1;
-    transition: opacity 0.4s ease;
-  }
-
-  .ticker-category {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #4a3f38;
-    margin-top: 1.2rem;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    padding-top: 0.8rem;
   }
 
   /* Prompt bar */
@@ -1102,7 +1063,7 @@
   }
 
   .prompt-bar-inner {
-    max-width: 1280px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0.75rem 2rem;
     display: flex;
@@ -1116,7 +1077,7 @@
     font-size: 0.65rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: #4a3f38;
+    color: #6b5d52;
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -1168,11 +1129,11 @@
   }
 
   @media (max-width: 900px) {
-    .consult-hero-inner {
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-    .principle-ticker { min-height: auto; }
+    .consult-hero { padding: 2rem 1rem 1.5rem; }
+    .consult-nav-prose { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .consult-nav-prose { grid-template-columns: 1fr; }
   }
 
   /* Animations */
@@ -1200,7 +1161,7 @@
       Serious <span class="title-mark">Cooking</span>
     </a>
     <nav id="primary-nav">
-      <button class="nav-btn active" data-section="consult">Consult</button>
+      <button class="nav-btn active" data-section="consult">Ask Anything</button>
       <button class="nav-btn" data-section="recipes">Recipes</button>
       <button class="nav-btn" data-section="techniques">Foundations</button>
       <button class="nav-btn" data-section="science">Science</button>
@@ -1215,46 +1176,39 @@
 ══════════════════════════════════════════════ -->
 <section id="section-consult" class="section active">
 
-  <!-- PHILOSOPHY HERO -->
+  <!-- HERO -->
   <div class="consult-hero">
     <div class="consult-hero-inner">
-      <div class="consult-hero-left">
-        <span class="section-label">Kitchen Intelligence</span>
-        <h1 class="consult-headline">The same ingredients.<br><em>Infinite outcomes.</em></h1>
-        <p class="consult-subhead">Serious cooking isn't about following recipes — it's about understanding the underlying logic: what heat does to protein, why emulsions break, how salt transforms texture over time. Master the principles and the dishes write themselves.</p>
-        <div class="consult-pillars">
-          <div class="pillar">
-            <span class="pillar-icon">⊹</span>
-            <span class="pillar-label">Technique</span>
-            <span class="pillar-desc">The how and why of every method</span>
-          </div>
-          <div class="pillar">
-            <span class="pillar-icon">⊹</span>
-            <span class="pillar-label">Science</span>
-            <span class="pillar-desc">The chemistry behind the result</span>
-          </div>
-          <div class="pillar">
-            <span class="pillar-icon">⊹</span>
-            <span class="pillar-label">Composition</span>
-            <span class="pillar-desc">Ingredients, recombined with intent</span>
-          </div>
+      <span class="section-label">Ask Anything</span>
+      <h1 class="consult-headline">The same ingredients.<br><em>Infinite outcomes.</em></h1>
+      <p class="consult-subhead">Serious cooking isn't about following recipes — it's about understanding the underlying logic: what heat does to protein, why emulsions break, how salt transforms texture over time. Master the principles and the dishes write themselves.</p>
+      <p class="consult-subhead">Every section of this site is built around that idea. Foundations and Science explain the mechanics — not just what to do, but what is actually happening when you apply heat, salt, acid, or time. Reference gives you the numbers and ratios that underpin hundreds of dishes. Charcuterie goes deep on preservation and transformation. Recipes is yours to build as you cook. And when something isn't working, or you want to think through a technique, Ask Anything is there — a culinary intelligence that meets you where you are.</p>
+      <div class="consult-nav-prose">
+        <div class="cnp-item">
+          <span class="cnp-label">Ask Anything</span>
+          <span class="cnp-text">Ask the AI anything — technique, timing, substitutions, troubleshooting mid-cook. It knows you're not a beginner. Responses are precise, technical, and direct.</span>
+        </div>
+        <div class="cnp-item">
+          <span class="cnp-label">Recipes</span>
+          <span class="cnp-text">Your personal collection. Save URLs, paste links, import bookmarks or documents. Organize by category, search across everything.</span>
+        </div>
+        <div class="cnp-item">
+          <span class="cnp-label">Foundations</span>
+          <span class="cnp-text">The techniques that underpin everything else — stocks, sauces, braises, emulsions, heat management. Not instructions: explanations.</span>
+        </div>
+        <div class="cnp-item">
+          <span class="cnp-label">Science</span>
+          <span class="cnp-text">The chemistry and physics behind the result. Maillard, protein denaturation, fat behavior, fermentation, starch gelatinization — the why behind the what.</span>
+        </div>
+        <div class="cnp-item">
+          <span class="cnp-label">Charcuterie</span>
+          <span class="cnp-text">Curing, drying, fermentation, sausage. Includes a cure calculator and drying time estimator. Built for precision work.</span>
+        </div>
+        <div class="cnp-item">
+          <span class="cnp-label">Reference</span>
+          <span class="cnp-text">The numbers you reach for mid-cook. Ratios, temperatures, weights, substitutions, ingredient conversions — all in one place.</span>
         </div>
       </div>
-      <div class="consult-hero-right">
-        <div class="principle-ticker" id="principle-ticker">
-          <div class="ticker-label">Principle of the moment</div>
-          <div class="ticker-text" id="ticker-text"></div>
-          <div class="ticker-category" id="ticker-category"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROMPT STARTERS -->
-  <div class="prompt-bar-wrap">
-    <div class="prompt-bar-inner">
-      <span class="prompt-bar-label">Quick consult:</span>
-      <div class="prompt-chips" id="prompt-chips"></div>
     </div>
   </div>
 
@@ -1263,7 +1217,7 @@
     <div id="chat-panel">
       <div class="chat-header">
         <div class="chat-dot"></div>
-        Kitchen Consult — Claude
+        Ask Anything — Claude
         <span class="chat-header-sub">Technical. Precise. No hand-holding.</span>
       </div>
       <div id="chat-messages">
@@ -2688,65 +2642,6 @@ document.getElementById('chat-send').addEventListener('click', sendChat);
 document.getElementById('chat-input').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
 });
-
-// ── PRINCIPLES TICKER ──
-const principles = [
-  { text: "Fat is a solvent, a conductor, and a flavor carrier. Which role it plays depends entirely on temperature.", cat: "Science" },
-  { text: "Salt doesn't just season — it denatures protein, draws out moisture, and restructures texture over time.", cat: "Science" },
-  { text: "Browning and cooking are not the same thing. The Maillard reaction requires surface moisture below 100°C — steam prevents it.", cat: "Science" },
-  { text: "Every braise is the same dish: collagen converted to gelatin by sustained heat in the presence of liquid. The variables are just flavor.", cat: "Technique" },
-  { text: "Acid brightens, balances, and extends perceived flavor. It belongs in almost every savory dish — the question is when to add it.", cat: "Composition" },
-  { text: "The difference between a fond and a burned pan is time, heat, and moisture management. One is the foundation of a sauce; the other is waste.", cat: "Technique" },
-  { text: "Emulsification is a temporary truce between fat and water. Your job is to create the conditions that make it last.", cat: "Science" },
-  { text: "Resting meat isn't optional — it's the final cooking step. Fibers relax, moisture redistributes, and the internal temperature equalizes.", cat: "Technique" },
-  { text: "Fermentation is controlled spoilage. The cook's role is to create the right conditions and get out of the way.", cat: "Science" },
-  { text: "Stock is liquid technique. Its quality determines the ceiling of every sauce, braise, and risotto built from it.", cat: "Technique" },
-  { text: "Sweetness suppresses bitterness. Bitterness cuts fat. Fat carries sweetness. Every balanced dish exploits these relationships.", cat: "Composition" },
-  { text: "The knife isn't just a cutting tool — uniformity of cut means uniformity of doneness.", cat: "Technique" },
-];
-
-let tickerIndex = Math.floor(Math.random() * principles.length);
-function showPrinciple() {
-  const el = document.getElementById('ticker-text');
-  const cat = document.getElementById('ticker-category');
-  if (!el || !cat) return;
-  el.style.opacity = 0;
-  setTimeout(() => {
-    el.textContent = principles[tickerIndex].text;
-    cat.textContent = principles[tickerIndex].cat;
-    el.style.opacity = 1;
-    tickerIndex = (tickerIndex + 1) % principles.length;
-  }, 400);
-}
-showPrinciple();
-setInterval(showPrinciple, 9000);
-
-// ── PROMPT CHIPS ──
-const chips = [
-  { cat: "Technique", text: "Why does searing before braising matter?" },
-  { cat: "Science", text: "At what point does collagen convert to gelatin?" },
-  { cat: "Technique", text: "When should I add acid to a braise?" },
-  { cat: "Ingredient", text: "What does salt do over 48 hours to a dry-brined duck?" },
-  { cat: "Science", text: "Why does fat smoke point matter for high-heat cooking?" },
-  { cat: "Technique", text: "How do I build a pan sauce from a fond?" },
-  { cat: "Composition", text: "What balances excessive bitterness in a dark braise?" },
-  { cat: "Science", text: "Why does resting meat redistribute moisture?" },
-  { cat: "Ingredient", text: "Functional difference between clarified butter and whole butter in a sauce?" },
-];
-
-const chipContainer = document.getElementById('prompt-chips');
-if (chipContainer) {
-  chips.forEach(chip => {
-    const btn = document.createElement('button');
-    btn.className = 'prompt-chip';
-    btn.innerHTML = `<span class="chip-cat">${chip.cat}</span>${chip.text}`;
-    btn.addEventListener('click', () => {
-      document.getElementById('chat-input').value = chip.text;
-      document.getElementById('chat-input').focus();
-    });
-    chipContainer.appendChild(btn);
-  });
-}
 
 // ── RECIPES (localStorage-free, in-memory) ──
 let recipes = [];
