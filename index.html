@@ -1036,6 +1036,16 @@
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .cnp-item:hover .cnp-label {
+    color: var(--brass-light);
+  }
+
+  .cnp-item:hover .cnp-text {
+    color: #a09488;
   }
 
   .cnp-item:nth-child(3n) {
@@ -1184,27 +1194,27 @@
       <p class="consult-subhead">Serious cooking isn't about following recipes — it's about understanding the underlying logic: what heat does to protein, why emulsions break, how salt transforms texture over time. Master the principles and the dishes write themselves.</p>
       <p class="consult-subhead">Every section of this site is built around that idea. Foundations and Science explain the mechanics — not just what to do, but what is actually happening when you apply heat, salt, acid, or time. Reference gives you the numbers and ratios that underpin hundreds of dishes. Charcuterie goes deep on preservation and transformation. Recipes is yours to build as you cook. And when something isn't working, or you want to think through a technique, Ask Anything is there — a culinary intelligence that meets you where you are.</p>
       <div class="consult-nav-prose">
-        <div class="cnp-item">
+        <div class="cnp-item" onclick="showSection('consult')">
           <span class="cnp-label">Ask Anything</span>
           <span class="cnp-text">Ask the AI anything — technique, timing, substitutions, troubleshooting mid-cook. It knows you're not a beginner. Responses are precise, technical, and direct.</span>
         </div>
-        <div class="cnp-item">
+        <div class="cnp-item" onclick="showSection('recipes')">
           <span class="cnp-label">Recipes</span>
           <span class="cnp-text">Your personal collection. Save URLs, paste links, import bookmarks or documents. Organize by category, search across everything.</span>
         </div>
-        <div class="cnp-item">
+        <div class="cnp-item" onclick="showSection('techniques')">
           <span class="cnp-label">Foundations</span>
           <span class="cnp-text">The techniques that underpin everything else — stocks, sauces, braises, emulsions, heat management. Not instructions: explanations.</span>
         </div>
-        <div class="cnp-item">
+        <div class="cnp-item" onclick="showSection('science')">
           <span class="cnp-label">Science</span>
           <span class="cnp-text">The chemistry and physics behind the result. Maillard, protein denaturation, fat behavior, fermentation, starch gelatinization — the why behind the what.</span>
         </div>
-        <div class="cnp-item">
+        <div class="cnp-item" onclick="showSection('charcuterie')">
           <span class="cnp-label">Charcuterie</span>
           <span class="cnp-text">Curing, drying, fermentation, sausage. Includes a cure calculator and drying time estimator. Built for precision work.</span>
         </div>
-        <div class="cnp-item">
+        <div class="cnp-item" onclick="showSection('reference')">
           <span class="cnp-label">Reference</span>
           <span class="cnp-text">The numbers you reach for mid-cook. Ratios, temperatures, weights, substitutions, ingredient conversions — all in one place.</span>
         </div>
@@ -2548,13 +2558,21 @@
 const sections = document.querySelectorAll('.section');
 const navBtns = document.querySelectorAll('.nav-btn');
 
+function showSection(sectionId) {
+  const navBtns = document.querySelectorAll('.nav-btn');
+  const sections = document.querySelectorAll('.section');
+  navBtns.forEach(b => b.classList.remove('active'));
+  sections.forEach(s => s.classList.remove('active'));
+  const btn = document.querySelector(`.nav-btn[data-section="${sectionId}"]`);
+  if (btn) btn.classList.add('active');
+  const sec = document.getElementById('section-' + sectionId);
+  if (sec) sec.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.showSection = showSection;
+
 navBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    navBtns.forEach(b => b.classList.remove('active'));
-    sections.forEach(s => s.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('section-' + btn.dataset.section).classList.add('active');
-  });
+  btn.addEventListener('click', () => showSection(btn.dataset.section));
 });
 
 // ── KNOWLEDGE TABS ──
