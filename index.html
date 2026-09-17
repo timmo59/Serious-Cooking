@@ -1227,8 +1227,8 @@
     <div id="chat-panel">
       <div class="chat-header">
         <div class="chat-dot"></div>
-        Ask Anything — Claude
-        <span class="chat-header-sub">Technical. Precise. No hand-holding.</span>
+        Ask Anything — Local AI
+        <span class="chat-header-sub" id="ai-model-status">Local AI — loads on first question</span>
       </div>
       <div id="chat-messages">
         <div class="msg assistant">Ready. What are you working on?</div>
@@ -2611,69 +2611,6 @@ document.querySelectorAll('.accordion-trigger').forEach(trigger => {
   });
 });
 
-// ── CHAT ──
-let chatHistory = [];
-
-async function sendChat() {
-  const input = document.getElementById('chat-input');
-  const msg = input.value.trim();
-  if (!msg) return;
-
-  const sendBtn = document.getElementById('chat-send');
-  sendBtn.disabled = true;
-  input.value = '';
-
-  addMsg('user', msg);
-  chatHistory.push({ role: 'user', content: msg });
-
-  const thinking = addMsg('thinking', '…thinking');
-
-  try {
-    const res = await fetch('https://serious-cooking-api.timmo59.workers.dev', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: `You are a culinary reference assistant for Tim, an experienced cook with 50+ years in the kitchen and a deep understanding of cooking science. He is not a beginner. Skip foundational explanations unless the science is the point. Be precise, technical, and direct. Use professional kitchen terminology. Reference food science when relevant. Tim is currently working on projects including bresaola curing and other charcuterie. Answer concisely but completely.`,
-        messages: chatHistory
-      })
-    });
-
-    const data = await res.json();
-    thinking.remove();
-
-    const reply = data.content?.[0]?.text || 'No response.';
-    addMsg('assistant', reply);
-    chatHistory.push({ role: 'assistant', content: reply });
-  } catch (err) {
-    thinking.remove();
-    addMsg('assistant', 'Error reaching API. Check your connection.');
-  }
-
-  sendBtn.disabled = false;
-}
-
-function addMsg(type, text) {
-  const container = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.className = 'msg ' + type;
-  div.textContent = text;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  return div;
-}
-
-function prefillChat(text) {
-  document.getElementById('chat-input').value = text;
-  document.getElementById('chat-input').focus();
-}
-
-document.getElementById('chat-send').addEventListener('click', sendChat);
-document.getElementById('chat-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
-});
-
 // ── RECIPES (localStorage-free, in-memory) ──
 let recipes = [];
 let editingId = null;
@@ -3558,5 +3495,7 @@ document.getElementById('recipe-modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 </script>
+
+<script type="module" src="./chat.js"></script>
 </body>
 </html>
