@@ -704,6 +704,44 @@ async function streamAnswer(
     return fullText.trim();
 }
 
+
+function getLocalConversationResponse(message) {
+    const normalized = normalizeText(message).toLowerCase();
+
+    if (
+        /^(hi|hello|hey|hiya|howdy|good morning|good afternoon|good evening)[!. ]*$/.test(
+            normalized
+        )
+    ) {
+        return (
+            "Hi! Ask me anything about the cooking material on Serious Cooking. " +
+            "I can explain concepts, summarize sections, compare techniques, or help clarify what the page says."
+        );
+    }
+
+    if (
+        /^(thanks|thank you|thx|ty)[!. ]*$/.test(
+            normalized
+        )
+    ) {
+        return "You're welcome. What would you like to explore on Serious Cooking?";
+    }
+
+    if (
+        normalized === "help" ||
+        normalized.includes("what can you do") ||
+        normalized.includes("how can you help")
+    ) {
+        return (
+            "I can help you understand the material on Serious Cooking. " +
+            "For example, ask me to explain a technique, summarize a section, compare two concepts, " +
+            "clarify terminology, or walk through information found on the page."
+        );
+    }
+
+    return null;
+}
+
 async function sendChat() {
     const input =
         document.getElementById(
@@ -733,6 +771,36 @@ async function sendChat() {
         "user",
         question
     );
+
+    /*
+     * Greetings and conversational control messages do not
+     * require source retrieval or an AI request.
+     */
+    const localResponse =
+        getLocalConversationResponse(question);
+
+    if (localResponse) {
+        addMsg(
+            "assistant",
+            localResponse
+        );
+
+        chatHistory.push(
+            {
+                role: "user",
+                content: question
+            },
+            {
+                role: "assistant",
+                content: localResponse
+            }
+        );
+
+        sendBtn.disabled = false;
+        input.focus();
+
+        return;
+    }
 
     const sources =
         retrieveSources(question);
