@@ -99,6 +99,12 @@ async function ensureModelLoaded() {
 
                     if (report && report.text) {
                         updateStatus(report.text);
+
+                        const thinking = document.querySelector(".msg.thinking");
+
+                        if (thinking) {
+                            thinking.textContent = report.text;
+                        }
                     }
                 },
                 logLevel: "INFO"
@@ -204,12 +210,15 @@ async function sendChat() {
             thinking.remove();
         }
 
+        const detail =
+            error && error.message
+                ? error.message
+                : "Unable to load or run the model.";
+
         addMsg(
             "assistant",
-            "Local AI error: " +
-            (error && error.message
-                ? error.message
-                : "Unable to load or run the model.")
+            "Local AI error: " + detail +
+            " If you are using Firefox, try the latest Chrome or Edge because WebGPU/WebLLM support is more reliable there."
         );
     } finally {
         sendBtn.disabled = false;
