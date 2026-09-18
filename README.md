@@ -463,3 +463,25 @@ Potential improvements include:
 - automatically selecting larger models on more capable computers
 
 The initial implementation intentionally keeps the AI integration simple so browser-based inference can be tested independently.
+
+## Page-Only AI Grounding
+
+The Serious Cooking AI is intentionally restricted to information already contained on the Serious Cooking page.
+
+The chat does not use web search and does not retrieve cooking information from outside websites.
+
+When a question is submitted:
+
+1. JavaScript searches the Serious Cooking page locally.
+2. Relevant page excerpts are selected.
+3. Only those excerpts are supplied to the local language model.
+4. The model is instructed to answer only from those excerpts.
+5. If no relevant Serious Cooking material is found, the model is not invoked and the site responds:
+
+       I can't answer that from the Serious Cooking page.
+
+This design is intended to make the AI an interface to Serious Cooking's own material rather than a general-purpose cooking chatbot.
+
+The underlying language model was pretrained before being included in the site, so technically the model contains general learned knowledge. The application therefore uses both retrieval restrictions and prompting to prevent that knowledge from being used as an answer source.
+
+No web-search tool is available to the Ask Serious Cooking chat.
