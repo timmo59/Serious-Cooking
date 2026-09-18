@@ -1,3 +1,5 @@
+console.log("Serious Cooking chat build: 1c2fed1-greeting");
+
 const CHAT_API =
     "https:" +
     "//serious-cooking-chat.serious-cooking-ai.workers.dev/chat";
