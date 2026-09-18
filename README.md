@@ -18,11 +18,11 @@ Unlike the previous version, the new chat does not require:
 - a dedicated AI server
 - a paid AI API
 
-Instead, the AI model runs directly in the visitor's browser using WebGPU.
+Instead, the AI model runs directly in the visitor's browser. It uses WebGPU when available and falls back to CPU/WebAssembly when necessary.
 
 Current model:
 
-    Llama-3.2-1B-Instruct-q4f16_1-MLC
+    onnx-community/gemma-3-270m-it-ONNX
 
 The browser integration is implemented in:
 
@@ -158,13 +158,9 @@ The prompt is defined in `chat.js` under:
 
 ## Browser Requirements
 
-The local AI feature requires WebGPU.
+The local AI feature prefers WebGPU for acceleration but can fall back to CPU/WebAssembly.
 
-If WebGPU is unavailable, the chat status will display:
-
-    WebGPU unavailable
-
-The rest of Serious Cooking should continue to work normally even if the browser cannot run the AI model.
+If WebGPU is unavailable, the chat will attempt to use CPU/WebAssembly instead. CPU mode is slower but works on a wider range of systems.
 
 If the AI does not work, first test with a current version of Chrome or Edge.
 
@@ -305,7 +301,7 @@ Confirm the configured model:
 
 The model line should reference:
 
-    Llama-3.2-1B-Instruct-q4f16_1-MLC
+    onnx-community/gemma-3-270m-it-ONNX
 
 
 # Testing the Published Site

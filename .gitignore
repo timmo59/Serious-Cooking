@@ -1,3 +1,4 @@
 
 # Local backups
 *.before-local-ai
+*.before-transformers

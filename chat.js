@@ -1,5 +1,9 @@
-const WEBLLM_URL = "https:" + "//esm.run/@mlc-ai/web-llm";
-const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+import {
+    pipeline,
+    env
+} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0";
+
+const MODEL_ID = "onnx-community/gemma-3-270m-it-ONNX";
 
 const SYSTEM_PROMPT = `
 You are a culinary reference assistant for an experienced cook with a deep
@@ -28,9 +32,13 @@ You can assist with:
 Answer concisely but completely.
 `.trim();
 
-let webllm = null;
-let engine = null;
-let enginePromise = null;
+env.allowLocalModels = false;
+env.allowRemoteModels = true;
+env.useBrowserCache = true;
+
+let generator = null;
+let generatorPromise = null;
+let activeDevice = null;
 let chatHistory = [];
 
 function addMsg(type, text) {
@@ -59,76 +67,220 @@ function updateStatus(text) {
     }
 }
 
-async function loadWebLLM() {
-    if (webllm) {
-        return webllm;
+function updateThinking(text) {
+    const thinking = document.querySelector(".msg.thinking");
+
+    if (thinking) {
+        thinking.textContent = text;
     }
-
-    updateStatus("Loading AI runtime…");
-
-    webllm = await import(WEBLLM_URL);
-
-    return webllm;
 }
 
-async function ensureModelLoaded() {
-    if (engine) {
-        return engine;
+function humanBytes(bytes) {
+    if (!Number.isFinite(bytes)) {
+        return "";
     }
 
-    if (enginePromise) {
-        return enginePromise;
+    const units = ["B", "KB", "MB", "GB"];
+    let value = bytes;
+    let unit = 0;
+
+    while (value >= 1024 && unit < units.length - 1) {
+        value /= 1024;
+        unit += 1;
     }
 
+    return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
+function progressCallback(info) {
+    console.log("Transformers.js:", info);
+
+    if (!info) {
+        return;
+    }
+
+    let message = "Loading local AI model…";
+
+    if (info.status === "initiate" && info.file) {
+        message = `Preparing ${info.file}…`;
+    }
+
+    if (info.status === "download" && info.file) {
+        message = `Downloading ${info.file}…`;
+    }
+
+    if (info.status === "progress") {
+        const pct =
+            Number.isFinite(info.progress)
+                ? `${Math.round(info.progress)}%`
+                : "";
+
+        const loaded =
+            Number.isFinite(info.loaded)
+                ? humanBytes(info.loaded)
+                : "";
+
+        const total =
+            Number.isFinite(info.total)
+                ? humanBytes(info.total)
+                : "";
+
+        if (loaded && total) {
+            message =
+                `Loading model ${pct} — ${loaded} / ${total}`;
+        } else if (pct) {
+            message = `Loading model ${pct}`;
+        }
+    }
+
+    if (info.status === "done" && info.file) {
+        message = `Loaded ${info.file}`;
+    }
+
+    if (info.status === "ready") {
+        message = "Model files ready";
+    }
+
+    updateStatus(message);
+    updateThinking(message);
+}
+
+async function tryWebGPU() {
     if (!("gpu" in navigator)) {
-        throw new Error(
-            "WebGPU is not available in this browser. Use a current Chrome or Edge browser with WebGPU support."
-        );
+        return null;
     }
 
-    enginePromise = (async () => {
-        const runtime = await loadWebLLM();
+    try {
+        const adapter = await navigator.gpu.requestAdapter();
 
-        updateStatus("Loading local AI model…");
+        if (!adapter) {
+            return null;
+        }
 
-        const localEngine = await runtime.CreateMLCEngine(
+        updateStatus("WebGPU detected — loading accelerated AI…");
+        updateThinking("WebGPU detected — loading accelerated AI…");
+
+        const pipe = await pipeline(
+            "text-generation",
             MODEL_ID,
             {
-                initProgressCallback: (report) => {
-                    console.log("WebLLM:", report);
-
-                    if (report && report.text) {
-                        updateStatus(report.text);
-
-                        const thinking = document.querySelector(".msg.thinking");
-
-                        if (thinking) {
-                            thinking.textContent = report.text;
-                        }
-                    }
-                },
-                logLevel: "INFO"
+                device: "webgpu",
+                dtype: "q4",
+                progress_callback: progressCallback
             }
         );
 
-        engine = localEngine;
-        updateStatus("Local AI ready");
+        activeDevice = "WebGPU";
 
-        return engine;
+        return pipe;
+
+    } catch (error) {
+        console.warn(
+            "WebGPU initialization failed; falling back to WASM.",
+            error
+        );
+
+        return null;
+    }
+}
+
+async function loadWasm() {
+    updateStatus("Loading CPU-compatible AI…");
+    updateThinking("Loading CPU-compatible AI…");
+
+    const pipe = await pipeline(
+        "text-generation",
+        MODEL_ID,
+        {
+            device: "wasm",
+            dtype: "q4",
+            progress_callback: progressCallback
+        }
+    );
+
+    activeDevice = "CPU / WebAssembly";
+
+    return pipe;
+}
+
+async function ensureModelLoaded() {
+    if (generator) {
+        return generator;
+    }
+
+    if (generatorPromise) {
+        return generatorPromise;
+    }
+
+    generatorPromise = (async () => {
+        let pipe = await tryWebGPU();
+
+        if (!pipe) {
+            pipe = await loadWasm();
+        }
+
+        generator = pipe;
+
+        updateStatus(`Local AI ready — ${activeDevice}`);
+        updateThinking(`Local AI ready — ${activeDevice}`);
+
+        return generator;
     })();
 
     try {
-        return await enginePromise;
+        return await generatorPromise;
+
     } catch (error) {
         console.error("Model load failed:", error);
 
-        enginePromise = null;
-        engine = null;
+        generator = null;
+        generatorPromise = null;
+        activeDevice = null;
 
         updateStatus("AI model failed to load");
 
         throw error;
     }
+}
+
+function buildMessages() {
+    return [
+        {
+            role: "system",
+            content: SYSTEM_PROMPT
+        },
+        ...chatHistory
+    ];
+}
+
+function extractAssistantText(output) {
+    if (!Array.isArray(output) || !output.length) {
+        return "";
+    }
+
+    const first = output[0];
+
+    if (
+        Array.isArray(first.generated_text) &&
+        first.generated_text.length
+    ) {
+        const last =
+            first.generated_text[first.generated_text.length - 1];
+
+        if (
+            last &&
+            typeof last === "object" &&
+            typeof last.content === "string"
+        ) {
+            return last.content.trim();
+        }
+    }
+
+    if (typeof first.generated_text === "string") {
+        return first.generated_text.trim();
+    }
+
+    return "";
 }
 
 async function sendChat() {
@@ -158,39 +310,31 @@ async function sendChat() {
 
     const thinking = addMsg(
         "thinking",
-        engine ? "…thinking" : "…loading local AI model"
+        generator
+            ? "…thinking"
+            : "…loading local AI model"
     );
 
     try {
-        const localEngine = await ensureModelLoaded();
+        const localGenerator = await ensureModelLoaded();
 
         if (thinking) {
-            thinking.textContent = "…thinking";
+            thinking.textContent =
+                `…thinking on ${activeDevice}`;
         }
 
-        const messages = [
+        const output = await localGenerator(
+            buildMessages(),
             {
-                role: "system",
-                content: SYSTEM_PROMPT
-            },
-            ...chatHistory
-        ];
-
-        const response = await localEngine.chat.completions.create({
-            messages,
-            temperature: 0.6,
-            top_p: 0.9,
-            max_tokens: 700
-        });
+                max_new_tokens: 300,
+                do_sample: false,
+                return_full_text: true
+            }
+        );
 
         const reply =
-            response &&
-            response.choices &&
-            response.choices[0] &&
-            response.choices[0].message &&
-            response.choices[0].message.content
-                ? response.choices[0].message.content.trim()
-                : "No response generated.";
+            extractAssistantText(output) ||
+            "No response generated.";
 
         if (thinking) {
             thinking.remove();
@@ -217,9 +361,9 @@ async function sendChat() {
 
         addMsg(
             "assistant",
-            "Local AI error: " + detail +
-            " If you are using Firefox, try the latest Chrome or Edge because WebGPU/WebLLM support is more reliable there."
+            "Local AI error: " + detail
         );
+
     } finally {
         sendBtn.disabled = false;
         input.focus();
@@ -240,7 +384,8 @@ function prefillChat(text) {
 function clearChat() {
     chatHistory = [];
 
-    const container = document.getElementById("chat-messages");
+    const container =
+        document.getElementById("chat-messages");
 
     if (!container) {
         return;
@@ -251,27 +396,43 @@ function clearChat() {
 }
 
 function initializeChat() {
-    const sendBtn = document.getElementById("chat-send");
-    const input = document.getElementById("chat-input");
+    const sendBtn =
+        document.getElementById("chat-send");
+
+    const input =
+        document.getElementById("chat-input");
 
     if (!sendBtn || !input) {
         console.error("Chat UI elements were not found.");
         return;
     }
 
-    sendBtn.addEventListener("click", sendChat);
+    sendBtn.addEventListener(
+        "click",
+        sendChat
+    );
 
-    input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-            sendChat();
+    input.addEventListener(
+        "keydown",
+        (event) => {
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+                event.preventDefault();
+                sendChat();
+            }
         }
-    });
+    );
 
-    if (!("gpu" in navigator)) {
-        updateStatus("WebGPU unavailable");
+    if ("gpu" in navigator) {
+        updateStatus(
+            "Local AI — WebGPU preferred, CPU fallback available"
+        );
     } else {
-        updateStatus("Local AI — loads on first question");
+        updateStatus(
+            "Local AI — CPU-compatible mode"
+        );
     }
 }
 
