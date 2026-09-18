@@ -1,52 +1,19 @@
-import {
-    pipeline,
-    env
-} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0";
-
-const MODEL_ID = "onnx-community/gemma-3-270m-it-ONNX";
+const CHAT_API =
+    "https:" +
+    "//serious-cooking-chat.serious-cooking-ai.workers.dev/chat";
 
 const NOT_FOUND_MESSAGE =
-    "I can't answer that from the Serious Cooking page.";
+    "I can't find enough information about that on the Serious Cooking page.";
 
-const SYSTEM_PROMPT = `
-You are the Serious Cooking page assistant.
+const MAX_RESULTS = 6;
 
-CRITICAL RULES:
-
-1. You may answer ONLY from the SOURCE EXCERPTS supplied with the user's question.
-2. Do NOT use your general pretrained knowledge.
-3. Do NOT add facts that are not explicitly supported by the supplied excerpts.
-4. Do NOT browse the web.
-5. Do NOT speculate.
-6. Do NOT fill in missing details from memory.
-7. If the supplied excerpts do not contain enough information to answer the question, respond exactly:
-
-I can't answer that from the Serious Cooking page.
-
-8. When you can answer, be concise, technical, and direct.
-9. At the end of the answer, list the supporting excerpt numbers in this form:
-
-Sources: [1], [3]
-
-Every factual statement must be supported by one or more supplied excerpts.
-`.trim();
-
-env.allowLocalModels = false;
-env.allowRemoteModels = true;
-env.useBrowserCache = true;
-
-let generator = null;
-let generatorPromise = null;
-let activeDevice = null;
+let knowledgeChunks = [];
 let chatHistory = [];
+let lastRetrievedSources = [];
 
-let pageChunks = [];
-
-/*
- * Words that contribute little value to simple page retrieval.
- */
 const STOP_WORDS = new Set([
     "a",
+    "about",
     "an",
     "and",
     "are",
@@ -54,6 +21,7 @@ const STOP_WORDS = new Set([
     "at",
     "be",
     "because",
+    "been",
     "but",
     "by",
     "can",
@@ -84,9 +52,11 @@ const STOP_WORDS = new Set([
     "that",
     "the",
     "their",
+    "them",
     "then",
     "there",
     "these",
+    "they",
     "this",
     "to",
     "was",
@@ -111,114 +81,38 @@ function normalizeText(text) {
         .trim();
 }
 
-function addMsg(type, text) {
-    const container = document.getElementById("chat-messages");
+function normalizeToken(token) {
+    let value = String(token || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9À-ÿ'-]/g, "");
 
-    if (!container) {
-        console.error("chat-messages container not found");
-        return null;
+    if (value.length > 7 && value.endsWith("ing")) {
+        value = value.slice(0, -3);
+    } else if (value.length > 6 && value.endsWith("ed")) {
+        value = value.slice(0, -2);
+    } else if (value.length > 5 && value.endsWith("es")) {
+        value = value.slice(0, -2);
+    } else if (value.length > 4 && value.endsWith("s")) {
+        value = value.slice(0, -1);
     }
 
-    const div = document.createElement("div");
-    div.className = "msg " + type;
-    div.textContent = text;
-
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-
-    return div;
+    return value;
 }
 
-function updateStatus(text) {
-    const status = document.getElementById("ai-model-status");
-
-    if (status) {
-        status.textContent = text;
-    }
+function tokenize(text) {
+    return normalizeText(text)
+        .toLowerCase()
+        .split(/[^a-z0-9À-ÿ'-]+/)
+        .map(normalizeToken)
+        .filter((token) => {
+            return (
+                token.length >= 3 &&
+                !STOP_WORDS.has(token)
+            );
+        });
 }
 
-function updateThinking(text) {
-    const thinking = document.querySelector(".msg.thinking");
-
-    if (thinking) {
-        thinking.textContent = text;
-    }
-}
-
-function humanBytes(bytes) {
-    if (!Number.isFinite(bytes)) {
-        return "";
-    }
-
-    const units = ["B", "KB", "MB", "GB"];
-    let value = bytes;
-    let unit = 0;
-
-    while (value >= 1024 && unit < units.length - 1) {
-        value /= 1024;
-        unit += 1;
-    }
-
-    return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
-}
-
-function progressCallback(info) {
-    console.log("Transformers.js:", info);
-
-    if (!info) {
-        return;
-    }
-
-    let message = "Loading local AI model…";
-
-    if (info.status === "initiate" && info.file) {
-        message = `Preparing ${info.file}…`;
-    }
-
-    if (info.status === "download" && info.file) {
-        message = `Downloading ${info.file}…`;
-    }
-
-    if (info.status === "progress") {
-        const pct =
-            Number.isFinite(info.progress)
-                ? `${Math.round(info.progress)}%`
-                : "";
-
-        const loaded =
-            Number.isFinite(info.loaded)
-                ? humanBytes(info.loaded)
-                : "";
-
-        const total =
-            Number.isFinite(info.total)
-                ? humanBytes(info.total)
-                : "";
-
-        if (loaded && total) {
-            message =
-                `Loading model ${pct} — ${loaded} / ${total}`;
-        } else if (pct) {
-            message = `Loading model ${pct}`;
-        }
-    }
-
-    if (info.status === "done" && info.file) {
-        message = `Loaded ${info.file}`;
-    }
-
-    if (info.status === "ready") {
-        message = "Model files ready";
-    }
-
-    updateStatus(message);
-    updateThinking(message);
-}
-
-/*
- * Split larger page sections into manageable retrieval chunks.
- */
-function splitIntoChunks(text, maxLength = 1200, overlap = 150) {
+function splitText(text, maxLength = 1500) {
     const normalized = normalizeText(text);
 
     if (!normalized) {
@@ -229,77 +123,90 @@ function splitIntoChunks(text, maxLength = 1200, overlap = 150) {
         return [normalized];
     }
 
+    const sentences = normalized.split(
+        /(?<=[.!?])\s+/
+    );
+
     const chunks = [];
-    let start = 0;
+    let current = "";
 
-    while (start < normalized.length) {
-        let end = Math.min(
-            start + maxLength,
-            normalized.length
-        );
-
-        /*
-         * Prefer ending on a sentence boundary.
-         */
-        if (end < normalized.length) {
-            const sentenceEnd = normalized.lastIndexOf(
-                ". ",
-                end
-            );
-
-            if (
-                sentenceEnd > start + Math.floor(maxLength * 0.60)
-            ) {
-                end = sentenceEnd + 1;
-            }
+    for (const sentence of sentences) {
+        if (
+            current &&
+            current.length + sentence.length + 1 > maxLength
+        ) {
+            chunks.push(current.trim());
+            current = "";
         }
 
-        const chunk = normalized
-            .slice(start, end)
-            .trim();
+        current +=
+            (current ? " " : "") +
+            sentence;
+    }
 
-        if (chunk) {
-            chunks.push(chunk);
-        }
-
-        if (end >= normalized.length) {
-            break;
-        }
-
-        start = Math.max(
-            end - overlap,
-            start + 1
-        );
+    if (current.trim()) {
+        chunks.push(current.trim());
     }
 
     return chunks;
 }
 
-/*
- * Build a searchable knowledge base from the Serious Cooking DOM.
- *
- * We intentionally do NOT index:
- * - chat messages
- * - scripts
- * - styles
- * - buttons
- * - input controls
- * - navigation
- *
- * The knowledge source is the Serious Cooking page itself.
- */
-function buildPageKnowledgeBase() {
+function getHeading(element) {
+    const ownHeading = element.querySelector(
+        "h1, h2, h3, h4, .callout-label, .section-label"
+    );
+
+    if (ownHeading) {
+        return normalizeText(
+            ownHeading.textContent
+        );
+    }
+
+    const section = element.closest(
+        "section, .section"
+    );
+
+    if (section) {
+        const sectionHeading = section.querySelector(
+            "h1, h2, h3, h4"
+        );
+
+        if (sectionHeading) {
+            return normalizeText(
+                sectionHeading.textContent
+            );
+        }
+    }
+
+    let node = element.previousElementSibling;
+
+    while (node) {
+        if (/^H[1-4]$/.test(node.tagName)) {
+            return normalizeText(
+                node.textContent
+            );
+        }
+
+        node = node.previousElementSibling;
+    }
+
+    return "Serious Cooking";
+}
+
+function buildKnowledgeBase() {
     const selectors = [
         ".section-hero",
         ".consult-hero",
         ".prose",
         ".accordion-item",
+        ".accordion-body",
         ".callout",
         ".timeline-step",
         ".temp-cell",
         ".table-wrap",
         ".cure-calc",
-        ".recipe-card"
+        ".recipe-card",
+        "article"
     ];
 
     const seen = new Set();
@@ -310,9 +217,6 @@ function buildPageKnowledgeBase() {
             document.querySelectorAll(selector);
 
         for (const element of elements) {
-            /*
-             * Never allow the chat itself to become source material.
-             */
             if (
                 element.closest("#chat-panel") ||
                 element.id === "chat-panel"
@@ -320,11 +224,9 @@ function buildPageKnowledgeBase() {
                 continue;
             }
 
-            const clone = element.cloneNode(true);
+            const clone =
+                element.cloneNode(true);
 
-            /*
-             * Remove interactive/UI-only elements before indexing.
-             */
             clone.querySelectorAll(
                 [
                     "script",
@@ -338,344 +240,489 @@ function buildPageKnowledgeBase() {
                 ].join(",")
             ).forEach((node) => node.remove());
 
-            const text =
-                normalizeText(clone.textContent);
+            const text = normalizeText(
+                clone.textContent
+            );
 
-            if (text.length < 40) {
+            if (text.length < 35) {
                 continue;
             }
 
-            for (const chunk of splitIntoChunks(text)) {
-                const key = chunk.toLowerCase();
+            const heading =
+                getHeading(element);
 
-                if (seen.has(key)) {
+            for (const piece of splitText(text)) {
+                const fingerprint =
+                    (
+                        heading +
+                        "|" +
+                        piece
+                    ).toLowerCase();
+
+                if (seen.has(fingerprint)) {
                     continue;
                 }
 
-                seen.add(key);
+                seen.add(fingerprint);
 
                 chunks.push({
                     id: chunks.length + 1,
-                    text: chunk
+                    heading,
+                    text: piece,
+                    normalizedText:
+                        piece.toLowerCase(),
+                    tokens:
+                        new Set(tokenize(piece))
                 });
             }
         }
     }
 
-    pageChunks = chunks;
+    knowledgeChunks = chunks;
 
     console.log(
-        `Serious Cooking knowledge base: ${pageChunks.length} page chunks`
+        "Serious Cooking knowledge chunks:",
+        knowledgeChunks.length
     );
 
-    return pageChunks;
+    updateStatus(
+        `AI ready — ${knowledgeChunks.length} page sections indexed`
+    );
 }
 
-function tokenize(text) {
-    return normalizeText(text)
-        .toLowerCase()
-        .replace(/[^a-z0-9À-ÿ'-]+/g, " ")
-        .split(/\s+/)
-        .map((token) => token.trim())
-        .filter((token) => {
-            return (
-                token.length >= 3 &&
-                !STOP_WORDS.has(token)
-            );
-        });
-}
-
-/*
- * Score a page chunk against the question.
- *
- * This is deliberately local and deterministic.
- * No external search engine or API is involved.
- */
 function scoreChunk(question, chunk) {
-    const questionText =
+    const query =
         normalizeText(question).toLowerCase();
-
-    const chunkText =
-        chunk.text.toLowerCase();
 
     const tokens =
         [...new Set(tokenize(question))];
 
-    let score = 0;
-
-    /*
-     * Strong boost for an exact multi-word query.
-     */
-    if (
-        questionText.length >= 5 &&
-        chunkText.includes(questionText)
-    ) {
-        score += 25;
+    if (!tokens.length) {
+        return 0;
     }
 
+    let score = 0;
+
+    if (
+        query.length >= 5 &&
+        chunk.normalizedText.includes(query)
+    ) {
+        score += 50;
+    }
+
+    const heading =
+        chunk.heading.toLowerCase();
+
     for (const token of tokens) {
-        const escaped = token.replace(
-            /[.*+?^${}()|[\]\\]/g,
-            "\\$&"
-        );
-
-        const matches =
-            chunkText.match(
-                new RegExp(`\\b${escaped}\\b`, "g")
-            );
-
-        if (matches) {
-            score += Math.min(matches.length, 5) * 3;
+        if (heading.includes(token)) {
+            score += 10;
         }
 
-        /*
-         * Partial-word match gets a smaller score.
-         */
-        if (
-            !matches &&
+        if (chunk.tokens.has(token)) {
+            score += 6;
+        } else if (
             token.length >= 5 &&
-            chunkText.includes(token)
+            chunk.normalizedText.includes(token)
         ) {
-            score += 1;
+            score += 2;
+        }
+    }
+
+    let matched = 0;
+
+    for (const token of tokens) {
+        if (chunk.tokens.has(token)) {
+            matched += 1;
+        }
+    }
+
+    const coverage =
+        matched / tokens.length;
+
+    score += coverage * 25;
+
+    for (
+        let i = 0;
+        i < tokens.length - 1;
+        i += 1
+    ) {
+        const phrase =
+            tokens[i] +
+            " " +
+            tokens[i + 1];
+
+        if (
+            chunk.normalizedText.includes(phrase)
+        ) {
+            score += 12;
         }
     }
 
     return score;
 }
 
-function retrievePageContext(question, limit = 6) {
-    if (!pageChunks.length) {
-        buildPageKnowledgeBase();
+function looksLikeFollowUp(question) {
+    const normalized =
+        normalizeText(question).toLowerCase();
+
+    const words =
+        normalized.split(/\s+/);
+
+    if (words.length <= 5) {
+        return true;
     }
 
-    const scored = pageChunks
-        .map((chunk) => ({
-            ...chunk,
-            score: scoreChunk(question, chunk)
-        }))
-        .filter((chunk) => chunk.score > 0)
-        .sort((a, b) => b.score - a.score);
-
-    if (!scored.length) {
-        return [];
-    }
-
-    /*
-     * Avoid feeding extremely weak matches to the model.
-     */
-    const bestScore = scored[0].score;
-
-    if (bestScore < 3) {
-        return [];
-    }
-
-    return scored.slice(0, limit);
+    return /\b(that|this|it|those|these|them|second|first|former|latter|why|how so|what about)\b/i
+        .test(normalized);
 }
 
-function buildGroundedPrompt(question, sources) {
-    const sourceText = sources
-        .map((source, index) => {
-            return (
-                `[${index + 1}] ` +
-                source.text
+function retrievalQuery(question) {
+    if (!looksLikeFollowUp(question)) {
+        return question;
+    }
+
+    const previousUser =
+        [...chatHistory]
+            .reverse()
+            .find(
+                (item) =>
+                    item.role === "user"
             );
+
+    if (!previousUser) {
+        return question;
+    }
+
+    return (
+        previousUser.content +
+        " " +
+        question
+    );
+}
+
+function retrieveSources(question) {
+    if (!knowledgeChunks.length) {
+        buildKnowledgeBase();
+    }
+
+    const query =
+        retrievalQuery(question);
+
+    const results =
+        knowledgeChunks
+            .map((chunk) => ({
+                ...chunk,
+                score:
+                    scoreChunk(
+                        query,
+                        chunk
+                    )
+            }))
+            .filter(
+                (chunk) =>
+                    chunk.score > 0
+            )
+            .sort(
+                (a, b) =>
+                    b.score -
+                    a.score
+            );
+
+    if (
+        results.length &&
+        results[0].score >= 8
+    ) {
+        const selected =
+            results.slice(
+                0,
+                MAX_RESULTS
+            );
+
+        lastRetrievedSources =
+            selected;
+
+        return selected;
+    }
+
+    if (
+        looksLikeFollowUp(question) &&
+        lastRetrievedSources.length
+    ) {
+        return lastRetrievedSources;
+    }
+
+    return [];
+}
+
+function addMsg(type, text) {
+    const container =
+        document.getElementById(
+            "chat-messages"
+        );
+
+    if (!container) {
+        return null;
+    }
+
+    const div =
+        document.createElement("div");
+
+    div.className =
+        "msg " + type;
+
+    div.textContent =
+        text;
+
+    container.appendChild(div);
+
+    container.scrollTop =
+        container.scrollHeight;
+
+    return div;
+}
+
+function updateStatus(text) {
+    const status =
+        document.getElementById(
+            "ai-model-status"
+        );
+
+    if (status) {
+        status.textContent = text;
+    }
+}
+
+function sourcePayload(sources) {
+    return sources.map(
+        (source) => ({
+            heading:
+                source.heading,
+            text:
+                source.text
         })
-        .join("\n\n");
-
-    return `
-SOURCE EXCERPTS FROM THE SERIOUS COOKING PAGE:
-
-${sourceText}
-
-USER QUESTION:
-
-${question}
-
-Answer the USER QUESTION using ONLY the SOURCE EXCERPTS above.
-
-Do not use outside knowledge.
-
-If the excerpts do not contain enough information to answer, reply exactly:
-
-${NOT_FOUND_MESSAGE}
-`.trim();
-}
-
-async function tryWebGPU() {
-    if (!("gpu" in navigator)) {
-        return null;
-    }
-
-    try {
-        const adapter =
-            await navigator.gpu.requestAdapter();
-
-        if (!adapter) {
-            return null;
-        }
-
-        updateStatus(
-            "WebGPU detected — loading local page assistant…"
-        );
-
-        updateThinking(
-            "WebGPU detected — loading local page assistant…"
-        );
-
-        const pipe = await pipeline(
-            "text-generation",
-            MODEL_ID,
-            {
-                device: "webgpu",
-                dtype: "q4",
-                progress_callback: progressCallback
-            }
-        );
-
-        activeDevice = "WebGPU";
-
-        return pipe;
-
-    } catch (error) {
-        console.warn(
-            "WebGPU initialization failed; using WASM.",
-            error
-        );
-
-        return null;
-    }
-}
-
-async function loadWasm() {
-    updateStatus(
-        "Loading CPU page assistant…"
     );
-
-    updateThinking(
-        "Loading CPU page assistant…"
-    );
-
-    const pipe = await pipeline(
-        "text-generation",
-        MODEL_ID,
-        {
-            device: "wasm",
-            dtype: "q4",
-            progress_callback: progressCallback
-        }
-    );
-
-    activeDevice = "CPU / WebAssembly";
-
-    return pipe;
 }
 
-async function ensureModelLoaded() {
-    if (generator) {
-        return generator;
-    }
-
-    if (generatorPromise) {
-        return generatorPromise;
-    }
-
-    generatorPromise = (async () => {
-        let pipe = await tryWebGPU();
-
-        if (!pipe) {
-            pipe = await loadWasm();
-        }
-
-        generator = pipe;
-
-        updateStatus(
-            `Page-only AI ready — ${activeDevice}`
-        );
-
-        updateThinking(
-            `Page-only AI ready — ${activeDevice}`
-        );
-
-        return generator;
-    })();
-
-    try {
-        return await generatorPromise;
-
-    } catch (error) {
-        console.error(
-            "Model load failed:",
-            error
-        );
-
-        generator = null;
-        generatorPromise = null;
-        activeDevice = null;
-
-        updateStatus(
-            "AI model failed to load"
-        );
-
-        throw error;
-    }
+function historyPayload() {
+    return chatHistory
+        .slice(-6)
+        .map((item) => ({
+            role:
+                item.role,
+            content:
+                item.content.slice(
+                    0,
+                    1200
+                )
+        }));
 }
 
-function extractAssistantText(output) {
+function parseSseEvent(eventText) {
+    const lines =
+        eventText.split(/\r?\n/);
+
+    let data = "";
+
+    for (const line of lines) {
+        if (line.startsWith("data:")) {
+            data +=
+                line.slice(5).trim();
+        }
+    }
+
+    return data;
+}
+
+function extractToken(payload) {
     if (
-        !Array.isArray(output) ||
-        !output.length
+        payload &&
+        typeof payload.response === "string" &&
+        payload.response
     ) {
-        return "";
+        return payload.response;
     }
 
-    const first = output[0];
+    const choice =
+        payload?.choices?.[0];
 
     if (
-        Array.isArray(first.generated_text) &&
-        first.generated_text.length
+        typeof choice?.delta?.content === "string"
     ) {
-        const last =
-            first.generated_text[
-                first.generated_text.length - 1
-            ];
-
-        if (
-            last &&
-            typeof last === "object" &&
-            typeof last.content === "string"
-        ) {
-            return last.content.trim();
-        }
+        return choice.delta.content;
     }
 
     if (
-        typeof first.generated_text === "string"
+        typeof choice?.text === "string"
     ) {
-        return first.generated_text.trim();
+        return choice.text;
     }
 
     return "";
 }
 
-async function sendChat() {
-    const input =
-        document.getElementById("chat-input");
+async function streamAnswer(
+    question,
+    sources,
+    outputElement
+) {
+    const response =
+        await fetch(
+            CHAT_API,
+            {
+                method: "POST",
 
-    const sendBtn =
-        document.getElementById("chat-send");
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
 
-    if (!input || !sendBtn) {
-        console.error(
-            "Chat input or send button not found"
+                body:
+                    JSON.stringify({
+                        question,
+                        context:
+                            sourcePayload(
+                                sources
+                            ),
+                        history:
+                            historyPayload()
+                    })
+            }
         );
 
+    if (!response.ok) {
+        let detail =
+            `HTTP ${response.status}`;
+
+        try {
+            const error =
+                await response.json();
+
+            if (
+                error &&
+                error.error
+            ) {
+                detail =
+                    error.error;
+            }
+        } catch {
+            // Keep HTTP status.
+        }
+
+        throw new Error(detail);
+    }
+
+    if (!response.body) {
+        throw new Error(
+            "Streaming response body is unavailable"
+        );
+    }
+
+    const reader =
+        response.body.getReader();
+
+    const decoder =
+        new TextDecoder();
+
+    let buffer = "";
+    let fullText = "";
+
+    while (true) {
+        const {
+            value,
+            done
+        } =
+            await reader.read();
+
+        if (done) {
+            break;
+        }
+
+        buffer += decoder.decode(
+            value,
+            {
+                stream: true
+            }
+        );
+
+        const events =
+            buffer.split(
+                /\r?\n\r?\n/
+            );
+
+        buffer =
+            events.pop() || "";
+
+        for (const eventText of events) {
+            const data =
+                parseSseEvent(
+                    eventText
+                );
+
+            if (
+                !data ||
+                data === "[DONE]"
+            ) {
+                continue;
+            }
+
+            try {
+                const payload =
+                    JSON.parse(data);
+
+                const token =
+                    extractToken(
+                        payload
+                    );
+
+                if (token) {
+                    fullText += token;
+
+                    outputElement.textContent =
+                        fullText;
+
+                    const container =
+                        document.getElementById(
+                            "chat-messages"
+                        );
+
+                    if (container) {
+                        container.scrollTop =
+                            container.scrollHeight;
+                    }
+                }
+
+            } catch (error) {
+                console.warn(
+                    "Unable to parse AI stream event:",
+                    data,
+                    error
+                );
+            }
+        }
+    }
+
+    return fullText.trim();
+}
+
+async function sendChat() {
+    const input =
+        document.getElementById(
+            "chat-input"
+        );
+
+    const sendBtn =
+        document.getElementById(
+            "chat-send"
+        );
+
+    if (!input || !sendBtn) {
         return;
     }
 
-    const message =
+    const question =
         input.value.trim();
 
-    if (!message) {
+    if (!question) {
         return;
     }
 
@@ -684,37 +731,29 @@ async function sendChat() {
 
     addMsg(
         "user",
-        message
+        question
     );
 
-    /*
-     * Search ONLY Serious Cooking page content.
-     */
     const sources =
-        retrievePageContext(message);
+        retrieveSources(question);
 
-    /*
-     * If there is no relevant page material,
-     * do not even invoke the language model.
-     *
-     * This is an important guardrail against
-     * answering from pretrained knowledge.
-     */
     if (!sources.length) {
         addMsg(
             "assistant",
             NOT_FOUND_MESSAGE
         );
 
-        chatHistory.push({
-            role: "user",
-            content: message
-        });
-
-        chatHistory.push({
-            role: "assistant",
-            content: NOT_FOUND_MESSAGE
-        });
+        chatHistory.push(
+            {
+                role: "user",
+                content: question
+            },
+            {
+                role: "assistant",
+                content:
+                    NOT_FOUND_MESSAGE
+            }
+        );
 
         sendBtn.disabled = false;
         input.focus();
@@ -723,102 +762,65 @@ async function sendChat() {
     }
 
     console.log(
-        "Page sources selected:",
+        "Serious Cooking sources:",
         sources
     );
 
-    const thinking = addMsg(
-        "thinking",
-        generator
-            ? "…searching Serious Cooking"
-            : "…loading page-only AI"
+    const outputElement =
+        addMsg(
+            "assistant",
+            "…"
+        );
+
+    updateStatus(
+        `Answering from ${sources.length} Serious Cooking sections…`
     );
 
     try {
-        const localGenerator =
-            await ensureModelLoaded();
-
-        if (thinking) {
-            thinking.textContent =
-                `…answering from ${sources.length} Serious Cooking excerpts`;
-        }
-
-        const groundedPrompt =
-            buildGroundedPrompt(
-                message,
-                sources
+        const answer =
+            await streamAnswer(
+                question,
+                sources,
+                outputElement
             );
 
-        const modelMessages = [
-            {
-                role: "system",
-                content: SYSTEM_PROMPT
-            },
+        const finalAnswer =
+            answer ||
+            NOT_FOUND_MESSAGE;
+
+        outputElement.textContent =
+            finalAnswer;
+
+        chatHistory.push(
             {
                 role: "user",
-                content: groundedPrompt
+                content: question
+            },
+            {
+                role: "assistant",
+                content: finalAnswer
             }
-        ];
-
-        const output =
-            await localGenerator(
-                modelMessages,
-                {
-                    /*
-                     * Keep generation short.
-                     * This also helps CPU performance.
-                     */
-                    max_new_tokens: 160,
-                    do_sample: false,
-                    return_full_text: true
-                }
-            );
-
-        let reply =
-            extractAssistantText(output);
-
-        if (!reply) {
-            reply =
-                NOT_FOUND_MESSAGE;
-        }
-
-        if (thinking) {
-            thinking.remove();
-        }
-
-        addMsg(
-            "assistant",
-            reply
         );
 
-        chatHistory.push({
-            role: "user",
-            content: message
-        });
-
-        chatHistory.push({
-            role: "assistant",
-            content: reply
-        });
+        updateStatus(
+            `AI ready — ${knowledgeChunks.length} page sections indexed`
+        );
 
     } catch (error) {
         console.error(
-            "Local AI error:",
+            "Serious Cooking AI error:",
             error
         );
 
-        if (thinking) {
-            thinking.remove();
-        }
+        outputElement.textContent =
+            "AI service error: " +
+            (
+                error?.message ||
+                "Unable to contact the Serious Cooking assistant."
+            );
 
-        const detail =
-            error && error.message
-                ? error.message
-                : "Unable to load or run the model.";
-
-        addMsg(
-            "assistant",
-            "Local AI error: " + detail
+        updateStatus(
+            "AI service unavailable"
         );
 
     } finally {
@@ -829,7 +831,9 @@ async function sendChat() {
 
 function prefillChat(text) {
     const input =
-        document.getElementById("chat-input");
+        document.getElementById(
+            "chat-input"
+        );
 
     if (!input) {
         return;
@@ -841,6 +845,7 @@ function prefillChat(text) {
 
 function clearChat() {
     chatHistory = [];
+    lastRetrievedSources = [];
 
     const container =
         document.getElementById(
@@ -852,14 +857,13 @@ function clearChat() {
     }
 
     container.innerHTML =
-        '<div class="msg assistant">Ready. Ask me about information contained on Serious Cooking.</div>';
+        '<div class="msg assistant">' +
+        'Ready. Ask me anything about the material on Serious Cooking.' +
+        '</div>';
 }
 
 function initializeChat() {
-    /*
-     * Build the page-only knowledge index immediately.
-     */
-    buildPageKnowledgeBase();
+    buildKnowledgeBase();
 
     const sendBtn =
         document.getElementById(
@@ -896,13 +900,12 @@ function initializeChat() {
             }
         }
     );
-
-    updateStatus(
-        `Page-only AI — ${pageChunks.length} local knowledge chunks`
-    );
 }
 
-window.prefillChat = prefillChat;
-window.clearChat = clearChat;
+window.prefillChat =
+    prefillChat;
+
+window.clearChat =
+    clearChat;
 
 initializeChat();
